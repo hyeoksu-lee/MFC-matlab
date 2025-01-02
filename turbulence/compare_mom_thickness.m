@@ -9,7 +9,7 @@ function compare_mom_thickness()
     f_compare_mom_thickness = figure("DefaultAxesFontSize", 18);
     set(f_compare_mom_thickness,"position",[100 100 700 600]);
 
-    A = readmatrix("vreman96.dat");
+    A = readmatrix("data/vreman96.dat");
     t = A(:,1);
     mth = A(:,2);
     plot(t, mth, 'ko', 'LineWidth', 2); hold on; grid on;
