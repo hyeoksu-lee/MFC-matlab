@@ -26,7 +26,13 @@ set_index(); load variables/index.mat;
 
 %% POST-PROCESS
 for l = 1:ncase
-    mth = zeros(1,Nfiles(l)); % Momentum thickness
+
+    mth = zeros(1,Nfiles(l));       % Momentum thickness
+    ruu = zeros(np(l),Nfiles(l));   % Reynolds stress: sqrt( rho u u)
+    rvv = zeros(np(l),Nfiles(l));   % Reynolds stress: sqrt( rho v v)
+    rww = zeros(np(l),Nfiles(l));   % Reynolds stress: sqrt( rho w w)
+    ruv = zeros(np(l),Nfiles(l));   % Reynolds stress: sqrt(-rho u v)
+    u_mean = zeros(np(l),Nfiles(l));% Mean streamwise velocity
 
     for q = 1:Nfiles(l)
         % Read data
@@ -98,36 +104,23 @@ for l = 1:ncase
         rho_fluc = rho - rho_mean_rep;
         vel_fluc = vel - vel_mean_rep;
 
-        if (mom_thickness == "T")
-            % Compute momentum thickness
-            f = zeros(np(l),1); % integrand
-            for j = 1:np(l)
-                f(j) = rho_mean(j)*(1 - mom_mean(1,j)/rho_mean(j))*(1 + mom_mean(1,j)/rho_mean(j))/4;
-            end
-            mth(q) = dy(l)*trapz(f);
-
-            if (self_similarity == "T")
-                % Check self-similarity
-                y_norm = y(l,:)/mth(q); % Normalized y-axis 
-                u_mean = vel_mean(1,:); % mean streamwise velocity
-            end
+        % Compute momentum thickness
+        f = zeros(np(l),1); % integrand
+        for j = 1:np(l)
+            f(j) = rho_mean(j)*(1 - mom_mean(1,j)/rho_mean(j))*(1 + mom_mean(1,j)/rho_mean(j))/4;
         end
+        mth(q) = dy(l)*trapz(f);
+        y_norm = y(l,1:np(l))/mth(q); % Normalized y-axis 
+
+        % Mean streamwise velocity
+        u_mean(:,q) = vel_mean(1,:);
 
         if (Reynolds_stress == "T")
             % Compute Reynolds stress
-            ruu = sqrt(squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(1,:,:,:)).^2,[1 3])));
-            rvv = sqrt(squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(2,:,:,:)).^2,[1 3])));
-            rww = sqrt(squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(3,:,:,:)).^2,[1 3])));
-            ruv = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]));
-        end
-
-        % Plots
-        if (self_similarity == "T")
-            f_self_similarity = figure("DefaultAxesFontSize", 18); plot_self_similarity(f_self_similarity, u_mean, y_norm, q);
-        end
-        
-        if (Reynolds_stress == "T")
-            f_Reynolds_stress = figure("DefaultAxesFontSize", 18); plot_Reynolds_stress(f_Reynolds_stress, y_norm, ruu, rvv, rww, ruv, q);
+            ruu(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(1,:,:,:)).^2,[1 3]));
+            rvv(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(2,:,:,:)).^2,[1 3]));
+            rww(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(3,:,:,:)).^2,[1 3]));
+            ruv(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]));
         end
 
         if (bubbles == "T")
@@ -161,19 +154,20 @@ for l = 1:ncase
         end
     end
 
-    if (self_similarity == "T")
-        saveas(f_self_similarity, f_self_similarity_dir(l)); close(f_self_similarity); disp('self_similarity saved');
+    if (mean_streamwise_vel == "T")
+        save_mean_streamwise_vel(post_stat_dir(l), time(l,1:Nfiles(l)), y_norm, u_mean); disp('mean_streamwise_vel data saved');
     end
     if (Reynolds_stress == "T")
-        saveas(f_Reynolds_stress, f_Reynolds_stress_dir(l)); close(f_Reynolds_stress); disp('Reynolds_stress saved');
+        save_Reynolds_stress(post_stat_dir(l), time(l,1:Nfiles(l)), y_norm, ruu, rvv, rww, ruv); disp('Reynolds_stress data saved');
     end
     if (mom_thickness == "T")
         f_mom_thickness = figure("DefaultAxesFontSize", 18); plot_mom_thickness(f_mom_thickness, time(l,1:Nfiles(l)), mth);
-        saveas(f_mom_thickness, f_mom_thickness_dir(l)); close(f_mom_thickness); disp('momentum_thickness saved');
-        print_mom_thickness(p_mom_thickness_dir(l), time(l,1:Nfiles(l)), mth); disp('momentum_thickness printed');
+        saveas(f_mom_thickness, f_mom_thickness_dir(l)); close(f_mom_thickness); disp('f_mom_thickness saved');
+        save_mom_thickness(post_stat_dir(l), time(l,1:Nfiles(l)), mth); disp('mom_thickness data saved');
+        print_mom_thickness(p_mom_thickness_dir(l), time(l,1:Nfiles(l)), mth); disp('p_momentum_thickness printed');
     end
 end
 
 % compare_mom_thickness();
-compare_bubble_radius_pdf();
-compare_bubble_radius_ratio();
+% compare_bubble_radius_pdf();
+% compare_bubble_radius_ratio();

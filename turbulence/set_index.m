@@ -4,8 +4,8 @@ function set_index()
 
     num_fluids = 1;
     num_dims = 3;
-    bubbles = "T";
-    adv_n = "T";
+    bubbles = "F";
+    adv_n = "F";
 
     % Index
     contxb = 1;

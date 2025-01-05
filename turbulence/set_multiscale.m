@@ -14,13 +14,19 @@ function set_multiscale(ncase)
     % Mixing layer scale
     x_m(:) = 0.002475;          % [m] initial vorticity thickness
     u_m(:) = 6.8686;            % [m/s] upper-lower stream velocity difference
-    pres(:) = 25927.63298;      % [N/m2] Initial pressure corresponding to Ca = 1
 
+    pres(:) = 25927.63298;      % [N/m2] Initial pressure corresponding to Ca = 1
     Pi_inf_w = Pi_inf_w ./ pres;
 
     % Sub-grid bubble scale
     x_b(:) = 10E-6;             % [m] Initial bubble equilibrium radius
     u_b(:) = sqrt(pres./rho_w); % [m/s] Reference velocity scale of bubble
+
+    % For single phase flow
+    x_m(:) = 1;
+    u_m(:) = 1;
+    x_b(:) = 1;
+    u_b(:) = 1;
 
     save variables/multiscale.mat;
 end

@@ -1,9 +1,9 @@
-function plot_self_similarity(f_self_similarity, u_mean, y_norm, nt)
+function plot_mean_streamwise_vel(f_mean_streamwise_vel, u_mean, y_norm)
 
     load variables/linestyle.mat;
 
-    figure(f_self_similarity);
-    plot(u_mean,y_norm,'color',blueGrad(nt,:)); hold on;
+    figure(f_mean_streamwise_vel);
+    plot(u_mean,y_norm,'k-'); hold on;
     % axis([-1.1 1.1 -5 5]);
     xlabel('$\bar{u}/\delta$','Interpreter','latex');
     ylabel('y/\delta');
