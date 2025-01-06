@@ -62,10 +62,10 @@ if (Reynolds_stress == "T")
 
     end
 
-    % ruu_integrated = sqrt(ruu_integrated)/2;
-    % rvv_integrated = sqrt(rvv_integrated)/2;
-    % rww_integrated = sqrt(rww_integrated)/2;
-    % ruv_integrated = sqrt(-ruv_integrated)/2;
+    ruu_integrated = sqrt(ruu_integrated)/2;
+    rvv_integrated = sqrt(rvv_integrated)/2;
+    rww_integrated = sqrt(rww_integrated)/2;
+    ruv_integrated = sqrt(-ruv_integrated)/2;
 
     f_Reynolds_stress = figure("DefaultAxesFontSize", 18); 
     plot_Reynolds_stress(f_Reynolds_stress, y_norm, ruu_integrated, rvv_integrated, rww_integrated, ruv_integrated);

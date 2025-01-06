@@ -104,13 +104,18 @@ for l = 1:ncase
         rho_fluc = rho - rho_mean_rep;
         vel_fluc = vel - vel_mean_rep;
 
+        % Compute vorticity thickness
+
+
         % Compute momentum thickness
         f = zeros(np(l),1); % integrand
         for j = 1:np(l)
             f(j) = rho_mean(j)*(1 - mom_mean(1,j)/rho_mean(j))*(1 + mom_mean(1,j)/rho_mean(j))/4;
         end
         mth(q) = dy(l)*trapz(f);
-        y_norm = y(l,1:np(l))/mth(q); % Normalized y-axis 
+
+        % Normalized y-axis 
+        y_norm = y(l,1:np(l))/mth(q);
 
         % Mean streamwise velocity
         u_mean(:,q) = vel_mean(1,:);
@@ -121,6 +126,17 @@ for l = 1:ncase
             rvv(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(2,:,:,:)).^2,[1 3]));
             rww(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(3,:,:,:)).^2,[1 3]));
             ruv(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]));
+        end
+
+        if (TKE == "T")
+ 
+            % Compute mean velocity gradient and velocity fluctuation gradient
+
+            % Compute TKE terms - Transport, Production, Dissipation, Pressure-strain, mass flux coupling
+
+
+
+
         end
 
         if (bubbles == "T")
