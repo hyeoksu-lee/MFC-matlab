@@ -1,2 +1,2 @@
-/app/matlab/R2023b/bin/matlab -nodisplay -nosplash -nodesktop
+/sw/external/matlab/2024a/bin/matlab -nodisplay -nosplash -nodesktop
 

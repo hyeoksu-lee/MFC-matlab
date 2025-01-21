@@ -1,14 +1,10 @@
 function set_directory()
 
     % Number of cases
-    ncase = 5;
+    ncase = 1;
 
     % Inputs
-    mfc_dir = [ "/p/global/hyeoksu/MFC/reynolds/case/realization1/Re640/n511";
-                "/p/global/hyeoksu/MFC/reynolds/case/realization2/Re640/n511";
-                "/p/global/hyeoksu/MFC/reynolds/case/realization3/Re640/n511";
-                "/p/global/hyeoksu/MFC/reynolds/case/realization4/Re640/n511";
-                "/p/global/hyeoksu/MFC/reynolds/case/realization5/Re640/n511";
+    mfc_dir = [ "/work/hdd/bdwd/hlee3/MFC/reynolds/case/realization2/Re160";
                 ];
 
     % Outputs to input directory
@@ -30,7 +26,7 @@ function set_directory()
     p_bubble_radius_dir = post_stat_dir + "/bubble_radius_";
 
     % Outputs to this directory
-    output_dir = "results/Re640/integrated";
+    output_dir = "results/Re160/integrated";
 
     % Legend
     % legend_entity = ["$\tilde{M}_c = 0.1$", "$\tilde{M}_c = 0.05$", "$\tilde{M}_c = 0.01$", "$M_c = 0.0023$"];

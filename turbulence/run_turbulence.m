@@ -128,16 +128,13 @@ for l = 1:ncase
             ruv(:,q) = squeeze(mean(rho_mean_rep.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]));
         end
 
-        if (TKE == "T")
+        % if (TKE == "T")
  
-            % Compute mean velocity gradient and velocity fluctuation gradient
+        %     % Compute mean velocity gradient and velocity fluctuation gradient
 
-            % Compute TKE terms - Transport, Production, Dissipation, Pressure-strain, mass flux coupling
+        %     % Compute TKE terms - Transport, Production, Dissipation, Pressure-strain, mass flux coupling
 
-
-
-
-        end
+        % end
 
         if (bubbles == "T")
             if (ismember(timesteps(l,q),Nt_compare))

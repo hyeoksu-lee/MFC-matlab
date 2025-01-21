@@ -12,13 +12,13 @@ function set_time(ncase)
 
     % Time
     Nt_beg(:) = 0;
-    Nt_end(:) = 10400;
-    Nt_save(:) = 1040; 
+    Nt_end(:) = 29232;
+    Nt_save(:) = 406; 
     Nfiles(:)  = (Nt_end - Nt_beg)./Nt_save + 1;
 
     Nt_compare = 0; %[0:8:1112];
 
-    dt(:) = 0.009621656881930854 .* (x_b./x_m) .* (u_m./u_b);
+    dt(:) = 0.012322472848788638 .* (x_b./x_m) .* (u_m./u_b);
 
     % 
     timesteps = zeros(ncase,max(Nfiles));

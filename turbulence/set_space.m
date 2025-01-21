@@ -13,15 +13,15 @@ function set_space(ncase)
 
     % x-direction
     Lx(:) = 59.0 * (x_b./x_m);
-    m(:) = 511; 
+    m(:) = 399; 
     mp = m + 1; 
     m_max = max(m);
     mp_max = m_max + 1;
     dx = Lx./mp;
 
     % y-direction
-    Ly = Lx; 
-    n = m; 
+    Ly = Lx * 3; 
+    n(:) = 1199; 
     np = n + 1;
     n_max = max(n);
     np_max = n_max + 1;
