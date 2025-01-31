@@ -1,10 +1,19 @@
 function set_directory()
 
     % Number of cases
-    ncase = 1;
+    ncase = 10;
 
     % Inputs
-    mfc_dir = [ "/work/hdd/bdwd/hlee3/MFC/reynolds/case/realization2/Re160";
+    mfc_dir = [ "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization1";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization2";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization3";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization4";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization5";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization6";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization7";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization8";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization9";
+                "/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization10";
                 ];
 
     % Outputs to input directory
@@ -20,6 +29,8 @@ function set_directory()
     f_Reynolds_stress_dir = post_stat_dir + "/Reynolds_stress.png";
     f_mom_thickness_dir = post_stat_dir + "/momentum_thickness.png";
     p_mom_thickness_dir = post_stat_dir + "/momentum_thickness.dat";
+    p_vor_thickness_dir = post_stat_dir + "/vorticity_thickness.dat";
+    p_kolmogorov_length_dir = post_stat_dir + "/kolmogorov_length.dat";
 
     f_bubble_radius_ratio_dir = post_stat_dir + "/bubble_radius_ratio_";
     f_bubble_radius_pdf_dir = post_stat_dir + "/bubble_radius_pdf_";

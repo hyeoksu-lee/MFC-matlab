@@ -10,6 +10,8 @@ function set_options(ncase)
     mom_thickness       = "T";
     mean_streamwise_vel = "T";
     Reynolds_stress     = "T";
+
+    % Bubbles
     bubbles             = "F";
     bubbles_wrt_x       = 13404.64 * (x_b./x_m);
     bubbles_wrt_y       = -57.0410 * (x_b./x_m);

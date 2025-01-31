@@ -12,7 +12,7 @@ function set_time(ncase)
 
     % Time
     Nt_beg(:) = 0;
-    Nt_end(:) = 29232;
+    Nt_end(:) = 40600;
     Nt_save(:) = 406; 
     Nfiles(:)  = (Nt_end - Nt_beg)./Nt_save + 1;
 

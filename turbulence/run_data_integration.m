@@ -30,19 +30,56 @@ set_index(); load variables/index.mat;
 if (mom_thickness == "T")
     mth_integrated = zeros(1,Nfiles(1));
 
+    f1 = figure("DefaultAxesFontSize", 18);
+    f2 = figure("DefaultAxesFontSize", 18);
     for l = 1:ncase
         load(post_stat_dir(l)+"/momentum_thickness.mat");
 
         mth_integrated = mth_integrated + mth / ncase;
 
+        % For individual plot
+        dmth = (mth(2:Nfiles(1)) - mth(1:Nfiles(1)-1)) ./ (time(2:Nfiles(1)) - time(1:Nfiles(1)-1));
+        figure(f1); plot(time, mth, 'k-'); hold on; grid on;
+        figure(f2); plot(time(1:Nfiles(1)-1), dmth, 'k-'); hold on; grid on;
+
     end
+
+    % Integrated momentum thickness
     f_mom_thickness = figure("DefaultAxesFontSize", 18); 
-
     plot_mom_thickness(f_mom_thickness, time(1:Nfiles(1)), mth_integrated);
-
     saveas(f_mom_thickness, output_dir+"/momentum_thickness.png"); 
     close(f_mom_thickness); 
     disp("f_mom_thickness saved");
+
+    % Integrated growth rate
+    dmth = (mth_integrated(2:Nfiles(1)) - mth_integrated(1:Nfiles(1)-1)) ./ (time(2:Nfiles(1)) - time(1:Nfiles(1)-1));
+
+    f_growth_rate = figure("DefaultAxesFontSize", 18); 
+    plot_growth_rate(f_growth_rate, time(1:Nfiles(1)-1), dmth);
+    saveas(f_growth_rate, output_dir+"/growth_rate.png"); 
+    close(f_growth_rate); 
+    disp("f_growth_rate saved");
+
+    % Individual plot
+    figure(f1);
+    plot(time, mth_integrated, 'r-', 'LineWidth', 2); hold on; grid on;
+    axis([0 500 0 14]);
+    xlabel('$t U_1 / \delta_\omega^0$','interpreter','latex');
+    ylabel('$\delta / \delta_\omega^0$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    saveas(f1,output_dir+"/momentum_thickness_individual.png");
+    close(f1);
+
+    figure(f2);
+    plot(time(1:Nfiles(1)-1), dmth, 'r-', 'LineWidth', 2); hold on; grid on;
+    plot([time(1) time(end)],[0.014 0.014], 'b--', 'LineWidth', 2);
+    axis([0 500 0 0.1]);
+    xlabel('$t U_1 / \delta_\omega^0$','interpreter','latex');
+    ylabel('$\dot{\delta} / U_1$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    saveas(f2,output_dir+"/growth_rate_individual.png");
+    close(f2);
+
 end
 
 if (Reynolds_stress == "T")
@@ -62,10 +99,11 @@ if (Reynolds_stress == "T")
 
     end
 
-    ruu_integrated = sqrt(ruu_integrated)/2;
-    rvv_integrated = sqrt(rvv_integrated)/2;
-    rww_integrated = sqrt(rww_integrated)/2;
-    ruv_integrated = sqrt(-ruv_integrated)/2;
+    ruu_integrated = sqrt(ruu_integrated);
+    rvv_integrated = sqrt(rvv_integrated);
+    rww_integrated = sqrt(rww_integrated);
+    ruv_integrated(ruv_integrated > 0) = 0;
+    ruv_integrated = sqrt(-ruv_integrated);
 
     f_Reynolds_stress = figure("DefaultAxesFontSize", 18); 
     plot_Reynolds_stress(f_Reynolds_stress, y_norm, ruu_integrated, rvv_integrated, rww_integrated, ruv_integrated);
