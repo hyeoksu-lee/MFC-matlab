@@ -1,7 +1,7 @@
 #!/bin/sh
 #PBS -A ONRDC48542612
-#PBS -q standard
-#PBS -l walltime=4:00:00
+#PBS -q debug
+#PBS -l walltime=1:00:00
 #PBS -l select=1:ncpus=192:mpiprocs=192
 #PBS -o log/matlab.out
 #PBS -e log/matlab.err
