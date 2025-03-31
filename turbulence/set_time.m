@@ -6,27 +6,14 @@ function set_time(ncase)
     Nt_beg = zeros(ncase,1);
     Nt_end = zeros(ncase,1);
     Nt_save = zeros(ncase,1);
-    Nfiles = zeros(ncase,1);
-
     dt = zeros(ncase,1);
 
     % Time
-    Nt_beg(:) = 0;
-    Nt_end(:) = 30625;
-    Nt_save(:) = 30625; 
-    Nfiles(:)  = (Nt_end - Nt_beg)./Nt_save + 1;
+    Nt_beg(:) = 19840;
+    Nt_end(:) = 19840;
+    Nt_save(:) = 496;
+    dt(:) = 0.4175308608629467 .* (x_b./x_m) .* (u_m./u_b);
 
-    Nt_compare = 0; %[0:8:1112];
-
-    dt(:) = 0.16892105685198072 .* (x_b./x_m) .* (u_m./u_b);
-
-    % 
-    timesteps = zeros(ncase,max(Nfiles));
-    time = zeros(ncase,max(Nfiles));
-    for i = 1:ncase
-        timesteps(i,1:Nfiles(i)) = Nt_beg(i):Nt_save(i):Nt_end(i);
-        time(i,1:Nfiles(i)) = timesteps(i,1:Nfiles(i))*dt(i);
-    end
-
+    % Save
     save variables/time.mat;
 end

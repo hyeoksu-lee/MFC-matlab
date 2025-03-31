@@ -30,21 +30,12 @@ set_index(); load variables/index.mat;
 if (mom_thickness == "T")
     mth_integrated = zeros(1,Nfiles(1));
 
-    f1 = figure("DefaultAxesFontSize", 18);
-    f2 = figure("DefaultAxesFontSize", 18);
     for l = 1:ncase
         load(post_stat_dir(l)+"/momentum_thickness.mat");
         mth_integrated = mth_integrated + mth / ncase;
     end
     % Growth rate
     dmth = (mth_integrated(2:Nfiles(1)) - mth_integrated(1:Nfiles(1)-1)) ./ (time(2:Nfiles(1)) - time(1:Nfiles(1)-1));
-
-    % Integrated momentum thickness
-    f_mom_thickness = figure("DefaultAxesFontSize", 18); 
-    plot_mom_thickness(f_mom_thickness, time(1:Nfiles(1)), mth_integrated);
-    saveas(f_mom_thickness, output_dir+"/momentum_thickness.png"); 
-    close(f_mom_thickness); 
-    disp("f_mom_thickness saved");
 
     % Integrated growth rate
     f_growth_rate = figure("DefaultAxesFontSize", 18); 

@@ -1,7 +1,7 @@
 function plot_Reynolds_stress(f_Reynolds_stress, y_norm, ruu, rvv, rww, ruv)
 
     load variables/linestyle.mat;
-    start_idx = 23;
+    start_idx = 25;
     
     figure(f_Reynolds_stress);
 

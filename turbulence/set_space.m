@@ -3,56 +3,25 @@ function set_space(ncase)
     load variables/multiscale.mat;
     
     % Initialize space and time variables
-    Lx = zeros(ncase,1);
-    Ly = zeros(ncase,1);
-    Lz = zeros(ncase,1);
-
-    m = zeros(ncase,1);
-    n = zeros(ncase,1);
-    p = zeros(ncase,1);
+    Lx_list = zeros(ncase,1); m_list = zeros(ncase,1);
+    Ly_list = zeros(ncase,1); n_list = zeros(ncase,1);
+    Lz_list = zeros(ncase,1); p_list = zeros(ncase,1);
+     
 
     % x-direction
-    Lx(:) = 59.0 * 4;
-    m(:) = 799; 
-    mp = m + 1; 
-    m_max = max(m);
-    mp_max = m_max + 1;
-    dx = Lx./mp;
+    Lx_list(:) = 160.0;
+    m_list(:) = 511;
+    stretch_x = "F";
 
     % y-direction
-    Ly(:) = 59.0 * 3; 
-    n(:) = 599; 
-    np = n + 1;
-    n_max = max(n);
-    np_max = n_max + 1;
-    dy = Ly./np;
+    Ly_list(:) = 160.0; 
+    n_list(:) = 511; 
+    stretch_y = "F"; a_y = 3; y_a = -0.3*Ly_list; y_b = 0.3*Ly_list; loops_y = 2;
 
     % z-direction
-    Lz(:) = 59.0 * 3;
-    p(:) = 599;
-    pp = p + 1;
-    p_max = max(p);
-    pp_max = p_max + 1;
-    dz = Lz./pp;
+    Lz_list(:) = 80.0;
+    p_list(:) = 255;
+    stretch_z = "F";
 
-    % grids
-    x = zeros(ncase, mp_max); 
-    y = zeros(ncase, np_max); 
-    z = zeros(ncase, pp_max);
-    r = mp.*np.*pp;
-
-    for l = 1:ncase
-        for i = 1:mp(l)
-            x(l,i) = (i - 1)*dx(l) + 0.5*dx(l);
-        end
-        for j = 1:np(l)
-            y(l,j) = (j - 1)*dy(l) + 0.5*dy(l) - 0.5*Ly(l);
-        end
-        for k = 1:pp(l)
-            z(l,k) = (k - 1)*dz(l) + 0.5*dz(l);
-        end
-    end
-
-    % Save variables
     save variables/space.mat
 end

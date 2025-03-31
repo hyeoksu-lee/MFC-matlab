@@ -1,0 +1,9 @@
+{Error using run_turbulence_parallel
+Transparency violation error.
+See <a href="matlab: helpview([docroot
+'/matlab/matlab_prog/matlab_prog.map'],'TransparencyViolation')">Workspace
+Transparency in MATLAB Statements</a>.
+
+Error in run (line 99)
+evalin('caller', strcat(script, ';'));
+} 

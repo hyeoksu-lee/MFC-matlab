@@ -1,0 +1,350 @@
+
+Running prologue...
+
+########################################
+Starting at Wed 22 Jan 2025 02:17:37 PM CST
+Running on hosts: STANDARD
+Running on 1 nodes.
+Running on 32 processors.
+Current working directory is /p/home/hyeoksu
+########################################
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2023 The MathWorks, Inc.
+             R2023b Update 7 (23.2.0.2515942) 64-bit (glnxa64)
+                              January 30, 2024
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+Starting parallel pool (parpool) using the 'Processes' profile ...
+Connected to parallel pool with 192 workers.
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+[Warning: A worker aborted during execution of the parfor loop. The parfor loop
+will now run again on the remaining workers.] 
+[> In parallel.internal.parfor/ParforEngine/handleIntervalErrorResult (line 287)
+In parallel.internal.parfor/ParforEngine/getCompleteIntervals (line 230)
+In parallel_function>distributed_execution (line 746)
+In parallel_function (line 578)
+In run_turbulence_parallel (line 41)
+In run (line 99)] 
+/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization1/restart_data/lustre_6496.dat
+/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization1/restart_data/lustre_406.dat
+/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization1/restart_data/lustre_2842.dat/p/global/hyeoksu/MFC/reynolds/case/domain3x/realization1/restart_data/lustre_0.dat[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[> In run>resetCD (line 106)
+In run>@()resetCD(startDir,fileDir) (line 59)
+In onCleanup/delete (line 25)
+In run (line 28)] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+[Warning: A MATLAB error occurred during PathAssistant event listener:
+The parallel pool shut down because the client lost connection to worker 68.
+Check the network connection or restart the parallel pool with 'parpool'..] 
+Parallel pool using the 'Processes' profile is shutting down.
+########################################
+Program finished with exit code 0 at: Wed 22 Jan 2025 02:39:18 PM CST
+########################################
+
+Running epilogue...
+
+
++------------------------------------------------------------------------+
+Memory usage reported in GB
+                       % of     user     user     user    total    total
+Node                  limit      max    limit  current  current     phys
+x1102c4s0b0n3        100.00   335.00   335.00     0.46    42.94   376.95
+Memory summary:
+		min  335.00 GB
+		max  335.00 GB
+		ave  335.00 GB
++------------------------------------------------------------------------+
+
+x1102c4s0b0n3: ALERT: Out of memory condition encountered!

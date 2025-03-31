@@ -41,7 +41,7 @@ function set_multiscale(ncase)
     % u_b(:) = 1;
 
     % Reynolds number
-    Re0 = 160;
+    Re0 = 50;
 
     % Vapor pressure
     pv = 2338.8 / (rho_w*u_m^2);
