@@ -1,20 +1,19 @@
 function set_directory()
 
-    % Number of cases
+    %% Number of cases
     ncase = 1;
 
-    % Proj dir
-    proj_dir = ["p010-ml3-001/Re50/weno_Re_flux_F/weno-cu6/N511";
+    %% Proj dir
+    proj_dir = ["p010-ml3-001/Re50/weno_Re_flux_T/weno5m/N511";
                 ];
 
-    % Inputs
+    %% Input data location
     mfc_dir = "/p/global/hyeoksu/MFC/reynolds/case/"+proj_dir;
 
-    % Outputs to matlab directory
-    % output_dir = "results/p010-ml3-001/Re50/weno_Re_flux_T";
+    %% Outputs to matlab directory
     output_dir = "results/"+proj_dir;
 
-    % Outputs to input directory
+    %% Create post_stat directory
     for i = 1:ncase
         if ~exist(strcat(mfc_dir(i),"/post_stat"), "dir")
             mkdir(strcat(mfc_dir(i),"/post_stat"));
@@ -30,6 +29,9 @@ function set_directory()
         end
         if ~exist(strcat(mfc_dir(i),"/post_stat/tke_budget"), "dir")
             mkdir(strcat(mfc_dir(i),"/post_stat/tke_budget"));
+        end
+        if ~exist(strcat(mfc_dir(i),"/post_stat/tke_budget_data"), "dir")
+            mkdir(strcat(mfc_dir(i),"/post_stat/tke_budget_data"));
         end
         if ~exist(strcat(mfc_dir(i),"/post_stat/energy_spectrum"), "dir")
             mkdir(strcat(mfc_dir(i),"/post_stat/energy_spectrum"));

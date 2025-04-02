@@ -7,13 +7,8 @@ function set_options(ncase)
     bubbles_wrt_z = zeros(ncase,1);
 
     % Options
-    mom_thickness       = "T";
-    mean_streamwise_vel = "T";
-    Reynolds_stress     = "T";
-    min_pressure        = "T";
-    vortex              = "T";
-    tke_budget          = "T";
-    energy_spectrum     = "T";
+    read_raw_data       = "F";
+    avg_over_self_sim   = "T";
     
     % Bubbles
     bubbles             = "F";
