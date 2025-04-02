@@ -56,7 +56,7 @@ for l = 1:ncase
 
         % Compute derivatives
         [dvel_ds dvelmean_dy dvelfluc_ds] = f_compute_vel_derivatives(qp(momxb:momxe,:,:,:), qp_mean(momxb:momxe,:), qp_fluc(momxb:momxe,:,:,:));
-        dpmean_dy = compute_derivative_1d(squeeze(qp_mean(E_idx,:)),y_cc);
+        dpmean_dy = f_compute_derivative_1d(squeeze(qp_mean(E_idx,:)),y_cc);
 
         % Compute vorticity
         omega = f_compute_vorticity(dvel_ds);
@@ -68,31 +68,30 @@ for l = 1:ncase
         [vth(q) mth(q) y_norm(:,q)] = f_compute_mixing_layer_thickness(qp_mean,dvelmean_dy);
 
         % Compute Reynolds stress
-        [ruu(:, q) rvv(:,q) rww(:,q) ruv(:,q)] = f_compute_Reynolds_stress(qp(1,:,:,:), qp_fluc(momxb:momxe,:,:,:));
+        [ruu(:,q) rvv(:,q) rww(:,q) ruv(:,q)] = f_compute_Reynolds_stress(qp(1,:,:,:), qp_fluc(momxb:momxe,:,:,:));
         
         % Compute Kolmogorov length scale / dy_min
         eta_min(q) = f_compute_kolmogorov_scale(dvelfluc_ds);
 
-        if (q == Nfiles(l))
-            % Compute TKE budget
-            [T P D S C] = f_compute_tke_budget(dvel_ds);
-            plot_tke_budget(y_norm(:,q),T,P,D,S,C,timesteps(q));
+        % Compute TKE budget
+        [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, dpmean_dy, squeeze(qp(1,:,:,:)), qp_fluc(momxb:momxe,:,:,:), squeeze(qp(E_idx,:,:,:)), y_norm(:,q), timesteps(q));
+        T = T / (8/mth(q)); P = P / (8/mth(q)); D = D / (8/mth(q)); S = S / (8/mth(q)); C = C / (8/mth(q));
+        plot_tke_budget(y_norm(:,q), T, P, D, S, C, timesteps(q));
 
-            % Compute 1D energy spectrum
-            [k,E] = f_compute_energy_spectrum(qp_fluc);
-            plot_energy_spectrum(k,E,timesteps(q));
-        end
+        % Compute 1D energy spectrum
+        [k,E] = f_compute_energy_spectrum(qp_fluc, mth(q));
+        plot_energy_spectrum(k, E, timesteps(q));
+
     end
 
     % SAVE DATA AS .MAT FILES
-    disp('save data')
     save(post_stat_dir+"/mean_streamwise_vel.mat","time","y_norm","u_mean");
     save(post_stat_dir+"/Reynolds_stress.mat","time","y_norm","ruu","rvv","rww","ruv");
-    save(post_stat_dir+"/mix_layer_thickness.mat","time","mth","vth");
+    save(post_stat_dir+"/mixlayer_thickness.mat","time","mth","vth");
     save(post_stat_dir+"/tke_budget.mat","y_norm","T","P","D","S","C");
 
     % SAVE DATA AS .DAT FILES
-    print_kolmogorov_length(time, eta_max, eta_min);
+    print_kolmogorov_length(time, eta_min);
     print_min_pressure(time, pres_min);
     print_mixlayer_thickness(time, mth, vth);
 
@@ -115,7 +114,7 @@ function qc = f_read_data(filename)
     fclose(fileID);
 
     % Reassign density & velocity components
-    qc = reshape(A, sys_size, mp, np, pp);
+    qc = permute(reshape(A, mp, np, pp, sys_size),[4 1 2 3]);
     qc(momxb:momxe,:,:,:) = qc(momxb:momxe,:,:,:) * (u_b/u_m);  % Momentum
     qc(E_idx,:,:,:) = qc(E_idx,:,:,:) * (u_b/u_m)^2;    % Energy
 
@@ -185,35 +184,35 @@ function [dvel_ds dvelmean_dy dvelfluc_ds] = f_compute_vel_derivatives(vel, vel_
     dvelfluc_ds = zeros(3,3,mp,np,pp);
 
     % Compute velocity derivatives
-    dvel_ds(1,1,:,:,:) = compute_derivative_3d(squeeze(vel(1,:,:,:)),x_cc,1);
-    dvel_ds(2,1,:,:,:) = compute_derivative_3d(squeeze(vel(2,:,:,:)),x_cc,1);
-    dvel_ds(3,1,:,:,:) = compute_derivative_3d(squeeze(vel(3,:,:,:)),x_cc,1);
+    dvel_ds(1,1,:,:,:) = f_compute_derivative_3d(squeeze(vel(1,:,:,:)),x_cc,1);
+    dvel_ds(2,1,:,:,:) = f_compute_derivative_3d(squeeze(vel(2,:,:,:)),x_cc,1);
+    dvel_ds(3,1,:,:,:) = f_compute_derivative_3d(squeeze(vel(3,:,:,:)),x_cc,1);
 
-    dvel_ds(1,2,:,:,:) = compute_derivative_3d(squeeze(vel(1,:,:,:)),y_cc,2);
-    dvel_ds(2,2,:,:,:) = compute_derivative_3d(squeeze(vel(2,:,:,:)),y_cc,2);
-    dvel_ds(3,2,:,:,:) = compute_derivative_3d(squeeze(vel(3,:,:,:)),y_cc,2);
+    dvel_ds(1,2,:,:,:) = f_compute_derivative_3d(squeeze(vel(1,:,:,:)),y_cc,2);
+    dvel_ds(2,2,:,:,:) = f_compute_derivative_3d(squeeze(vel(2,:,:,:)),y_cc,2);
+    dvel_ds(3,2,:,:,:) = f_compute_derivative_3d(squeeze(vel(3,:,:,:)),y_cc,2);
 
-    dvel_ds(1,3,:,:,:) = compute_derivative_3d(squeeze(vel(1,:,:,:)),z_cc,3);
-    dvel_ds(2,3,:,:,:) = compute_derivative_3d(squeeze(vel(2,:,:,:)),z_cc,3);
-    dvel_ds(3,3,:,:,:) = compute_derivative_3d(squeeze(vel(3,:,:,:)),z_cc,3);
+    dvel_ds(1,3,:,:,:) = f_compute_derivative_3d(squeeze(vel(1,:,:,:)),z_cc,3);
+    dvel_ds(2,3,:,:,:) = f_compute_derivative_3d(squeeze(vel(2,:,:,:)),z_cc,3);
+    dvel_ds(3,3,:,:,:) = f_compute_derivative_3d(squeeze(vel(3,:,:,:)),z_cc,3);
 
     % favre-averaged velocity derivatives
-    dvelmean_dy(1,:) = compute_derivative_1d(vel_mean(1,:),y_cc);
-    dvelmean_dy(2,:) = compute_derivative_1d(vel_mean(2,:),y_cc);
-    dvelmean_dy(3,:) = compute_derivative_1d(vel_mean(3,:),y_cc);
+    dvelmean_dy(1,:) = f_compute_derivative_1d(vel_mean(1,:),y_cc);
+    dvelmean_dy(2,:) = f_compute_derivative_1d(vel_mean(2,:),y_cc);
+    dvelmean_dy(3,:) = f_compute_derivative_1d(vel_mean(3,:),y_cc);
 
     % fluctuating velocity derivatives
-    dvelfluc_ds(1,1,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(1,:,:,:)),x_cc,1);
-    dvelfluc_ds(2,1,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(2,:,:,:)),x_cc,1);
-    dvelfluc_ds(3,1,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(3,:,:,:)),x_cc,1);
+    dvelfluc_ds(1,1,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(1,:,:,:)),x_cc,1);
+    dvelfluc_ds(2,1,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(2,:,:,:)),x_cc,1);
+    dvelfluc_ds(3,1,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(3,:,:,:)),x_cc,1);
 
-    dvelfluc_ds(1,2,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(1,:,:,:)),y_cc,2);
-    dvelfluc_ds(2,2,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(2,:,:,:)),y_cc,2);
-    dvelfluc_ds(3,2,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(3,:,:,:)),y_cc,2);
+    dvelfluc_ds(1,2,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(1,:,:,:)),y_cc,2);
+    dvelfluc_ds(2,2,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(2,:,:,:)),y_cc,2);
+    dvelfluc_ds(3,2,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(3,:,:,:)),y_cc,2);
 
-    dvelfluc_ds(1,3,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(1,:,:,:)),z_cc,3);
-    dvelfluc_ds(2,3,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(2,:,:,:)),z_cc,3);
-    dvelfluc_ds(3,3,:,:,:) = compute_derivative_3d(squeeze(vel_fluc(3,:,:,:)),z_cc,3);
+    dvelfluc_ds(1,3,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(1,:,:,:)),z_cc,3);
+    dvelfluc_ds(2,3,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(2,:,:,:)),z_cc,3);
+    dvelfluc_ds(3,3,:,:,:) = f_compute_derivative_3d(squeeze(vel_fluc(3,:,:,:)),z_cc,3);
 end
 
 % f_compute_mixing_layer_thickness
@@ -272,9 +271,10 @@ function eta_min = f_compute_kolmogorov_scale(dvelfluc_ds)
 end
 
 % f_compute_tke_budget
-function [T P D S C] = f_compute_tke_budget(dvel_ds)
+function [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, dpmean_dy, rho, vel_fluc, pres_fluc, y_norm, timestep)
 
     load variables/global_parameters.mat;
+    load variables/grid.mat;
 
     % Compute strain-rate tensor
     [SS S11 S12 S13 S22 S23 S33] = f_compute_strain_rate_tensor(dvel_ds);
@@ -282,136 +282,84 @@ function [T P D S C] = f_compute_tke_budget(dvel_ds)
 
     % Viscous stress tensor
     divU = squeeze(dvel_ds(1,1,:,:,:) + dvel_ds(2,2,:,:,:) + dvel_ds(3,3,:,:,:));
-    v11 = 2/Re*(S11 - divU/3); v12 = 2/Re*(S12); v13 = 2/Re*(S13);
-    v21 = 2/Re*(S21); v22 = 2/Re*(S22 - divU/3); v23 = 2/Re*(S23);
-    v31 = 2/Re*(S31); v32 = 2/Re*(S32); v33 = 2/Re*(S33 - divU/3);
-    v11_mean = mean(v11,[1 3]);
-    v12_mean = mean(v12,[1 3]);
-    v13_mean = mean(v13,[1 3]);
-    v21_mean = mean(v21,[1 3]);
-    v22_mean = mean(v22,[1 3]);
-    v23_mean = mean(v23,[1 3]);
-    v31_mean = mean(v31,[1 3]);
-    v32_mean = mean(v32,[1 3]);
-    v33_mean = mean(v33,[1 3]);
-    
-    dv11_meandx = compute_derivative_1d(v11_mean,x_cc);
-    dv12_meandy = compute_derivative_1d(v12_mean,y_cc);
-    dv13_meandz = compute_derivative_1d(v13_mean,z_cc);
-    dv21_meandx = compute_derivative_1d(v21_mean,x_cc);
-    dv22_meandy = compute_derivative_1d(v22_mean,y_cc);
-    dv23_meandz = compute_derivative_1d(v23_mean,z_cc);
-    dv31_meandx = compute_derivative_1d(v31_mean,x_cc);
-    dv32_meandy = compute_derivative_1d(v32_mean,y_cc);
-    dv33_meandz = compute_derivative_1d(v33_mean,z_cc);
+    sig = zeros(3,3,mp,np,pp);
+    sig(1,1,:,:,:) = 2/Re*(S11 - divU/3);
+    sig(1,2,:,:,:) = 2/Re*(S12);
+    sig(1,3,:,:,:) = 2/Re*(S13);
+    sig(2,1,:,:,:) = 2/Re*(S21);
+    sig(2,2,:,:,:) = 2/Re*(S22 - divU/3);
+    sig(2,3,:,:,:) = 2/Re*(S23);
+    sig(3,1,:,:,:) = 2/Re*(S31);
+    sig(3,2,:,:,:) = 2/Re*(S32);
+    sig(3,3,:,:,:) = 2/Re*(S33 - divU/3);
 
-    v11_fluc = v11 - squeeze(permute(repmat(v11_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v12_fluc = v12 - squeeze(permute(repmat(v12_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v13_fluc = v13 - squeeze(permute(repmat(v13_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v21_fluc = v21 - squeeze(permute(repmat(v21_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v22_fluc = v22 - squeeze(permute(repmat(v22_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v23_fluc = v23 - squeeze(permute(repmat(v23_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v31_fluc = v31 - squeeze(permute(repmat(v31_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v32_fluc = v32 - squeeze(permute(repmat(v32_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    v33_fluc = v33 - squeeze(permute(repmat(v33_mean, [1 1 mp(l) pp(l)]), [1 3 2 4]));
-    
-    % % Transport (T)
-    % T1 = rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:));
-    % T2 = rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:).*vel_fluc(1,:,:,:));
-    % T3 = rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(3,:,:,:).*vel_fluc(1,:,:,:));
-    % T4 = mean(pres_fluc.*squeeze(vel_fluc(1,:,:,:)),[1 3]);
-    % T5 = -squeeze(v11_fluc.*squeeze(vel_fluc(1,:,:,:)));
-    % T6 = -squeeze(v21_fluc.*squeeze(vel_fluc(2,:,:,:)));
-    % T7 = -squeeze(v31_fluc.*squeeze(vel_fluc(3,:,:,:)));
-    % T0 = -(0.5*mean(T1 + T2 + T3,[1 3]) + T4 + mean(T5 + T6 + T7,[1 3]));
-    % Tx = compute_derivative_1d(T0,x);
+    sigmean = zeros(3,3,np);
+    dsigmean_dy = zeros(3,3,np);
+    for i = 1:3
+        for j = 1:3
+            sigmean(i,j,:) = squeeze(mean(sig(i,j,:,:,:),[3 5]));
+            dsigmean_dy(i,j,:) = f_compute_derivative_1d(sigmean(i,j,:),y_cc);
+        end
+    end
+    sigfluc = sig - permute(repmat(sigmean, [1 1 1 mp pp]), [1 2 4 3 5]);
 
-    % T1 = rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:));
-    % T2 = rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:));
-    % T3 = rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(3,:,:,:).*vel_fluc(2,:,:,:));
-    % T4 = mean(pres_fluc.*squeeze(vel_fluc(2,:,:,:)),[1 3]);
-    % T5 = -squeeze(v12_fluc.*squeeze(vel_fluc(1,:,:,:)));
-    % T6 = -squeeze(v22_fluc.*squeeze(vel_fluc(2,:,:,:)));
-    % T7 = -squeeze(v32_fluc.*squeeze(vel_fluc(3,:,:,:)));
-    % T0 = -(0.5*mean(T1 + T2 + T3,[1 3]) + T4 + mean(T5 + T6 + T7,[1 3]));
-    % Ty = compute_derivative_1d(T0,y);
+    % Transport (T)
+    T1 = -0.5*mean(...
+         rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)) ...
+       + rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:)) ...
+       + rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(3,:,:,:).*vel_fluc(2,:,:,:)),[1 3]);
+    T2 = -mean(pres_fluc.*squeeze(vel_fluc(2,:,:,:)),[1 3]);
+    T3 = mean(...
+         squeeze(sigfluc(1,2,:,:,:)).*squeeze(vel_fluc(1,:,:,:)) ...
+       + squeeze(sigfluc(2,2,:,:,:)).*squeeze(vel_fluc(2,:,:,:)) ...
+       + squeeze(sigfluc(3,2,:,:,:)).*squeeze(vel_fluc(3,:,:,:)),[1 3]);
+    T0 = T1 + T2 + T3;
+    plot_tke_budget_T_components(y_norm, T0, T1, T2, T3, timestep);
+    T = f_compute_derivative_1d(T0,y_cc); 
+    T1 = f_compute_derivative_1d(T1,y_cc); 
+    T2 = f_compute_derivative_1d(T2,y_cc); 
+    T3 = f_compute_derivative_1d(T3,y_cc); 
+    plot_tke_budget_Tderiv_components(y_norm, T, T1, T2, T3, timestep);
+    clear T0 T1 T2 T3
 
-    % T1 = rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:).*vel_fluc(3,:,:,:));
-    % T2 = rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:).*vel_fluc(3,:,:,:));
-    % T3 = rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(3,:,:,:).*vel_fluc(3,:,:,:));
-    % T4 = mean(pres_fluc.*squeeze(vel_fluc(3,:,:,:)),[1 3]);
-    % T5 = -squeeze(v13_fluc.*squeeze(vel_fluc(1,:,:,:)));
-    % T6 = -squeeze(v23_fluc.*squeeze(vel_fluc(2,:,:,:)));
-    % T7 = -squeeze(v33_fluc.*squeeze(vel_fluc(3,:,:,:)));
-    % T0 = -(0.5*mean(T1 + T2 + T3,[1 3]) + T4 + mean(T5 + T6 + T7, [1 3]));
-    % Tz = compute_derivative_1d(T0,z);
+    % Turbulent production (P)
+    P1 = -mean(rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*squeeze(dvelmean_dy(1,:));
+    P2 = -mean(rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*squeeze(dvelmean_dy(2,:));
+    P3 = -mean(rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*squeeze(dvelmean_dy(3,:));
+    P = P1 + P2 + P3;
+    plot_tke_budget_P_components(y_norm, P, P1, P2, P3, timestep);
+    clear P1 P2 P3
 
-    % T = Tx + Ty + Tz;
-    % clear T0 T1 T2 T3 T4 T5 T6 T7 Tx Ty Tz
+    % Dissipation (D)
+    D = -mean(squeeze(sigfluc(1,1,:,:,:).*dvelfluc_ds(1,1,:,:,:)) ...
+            + squeeze(sigfluc(2,1,:,:,:).*dvelfluc_ds(2,1,:,:,:)) ... 
+            + squeeze(sigfluc(3,1,:,:,:).*dvelfluc_ds(3,1,:,:,:)) ...
+            + squeeze(sigfluc(1,2,:,:,:).*dvelfluc_ds(1,2,:,:,:)) ...
+            + squeeze(sigfluc(2,2,:,:,:).*dvelfluc_ds(2,2,:,:,:)) ...
+            + squeeze(sigfluc(3,2,:,:,:).*dvelfluc_ds(3,2,:,:,:)) ...
+            + squeeze(sigfluc(1,3,:,:,:).*dvelfluc_ds(1,3,:,:,:)) ...
+            + squeeze(sigfluc(2,3,:,:,:).*dvelfluc_ds(2,3,:,:,:))  ...
+            + squeeze(sigfluc(3,3,:,:,:).*dvelfluc_ds(3,3,:,:,:)), [1 3]);
 
-    % % Turbulent production (P)
-    % P1 = mean(rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:)),[1 3]).*dUmeandx;
-    % P2 = mean(rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(1,:,:,:)),[1 3]).*dVmeandx;
-    % P3 = mean(rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(1,:,:,:)),[1 3]).*dWmeandx;
-    % P4 = mean(rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*dUmeandy;
-    % P5 = mean(rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*dVmeandy;
-    % P6 = mean(rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*dWmeandy;
-    % P7 = mean(rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(3,:,:,:)),[1 3]).*dUmeandz;
-    % P8 = mean(rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(3,:,:,:)),[1 3]).*dVmeandz;
-    % P9 = mean(rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(3,:,:,:)),[1 3]).*dWmeandz;
-    % P = - (P1 + P2 + P3 + P4 + P5 + P6 + P7 + P8 + P9);
-    % clear P1 P2 P3 P4 P5 P6 P7 P8 P9
+    % Pressure-strain (S)
+    S = mean(pres_fluc.*squeeze(dvelfluc_ds(1,1,:,:,:)),[1 3]) ...
+      + mean(pres_fluc.*squeeze(dvelfluc_ds(2,2,:,:,:)),[1 3]) ...
+      + mean(pres_fluc.*squeeze(dvelfluc_ds(3,3,:,:,:)),[1 3]);
 
-    % % Dissipation (D)
-    % D = -mean(squeeze(v11_fluc).*dudx + squeeze(v21_fluc).*dvdx + squeeze(v31_fluc).*dwdx ...
-    %         + squeeze(v12_fluc).*dudy + squeeze(v22_fluc).*dvdy + squeeze(v32_fluc).*dwdy ...
-    %         + squeeze(v13_fluc).*dudz + squeeze(v23_fluc).*dvdz + squeeze(v33_fluc).*dwdz, [1 3]);
-
-    % % Pressure-strain (S)
-    % S = mean(pres_fluc.*dudx,[1 3]) ...
-    %   + mean(pres_fluc.*dvdy,[1 3]) ...
-    %   + mean(pres_fluc.*dwdz,[1 3]);
-
-    % % Mass flux coupling (C)
-    % C = mean(squeeze(vel_fluc(1,:,:,:)),[1 3]).*(dv11_meandx + dv12_meandy + dv13_meandz - dpmeandx) ...
-    %   + mean(squeeze(vel_fluc(2,:,:,:)),[1 3]).*(dv21_meandx + dv22_meandy + dv23_meandz - dpmeandy) ...
-    %   + mean(squeeze(vel_fluc(3,:,:,:)),[1 3]).*(dv31_meandx + dv32_meandy + dv33_meandz - dpmeandz);
-
-    % compute production
-    dUmeandy = getDerivative(Umean,y_cc); % mean shear
-    uvmean = mean(u.*v,[1,3]).'; % mean Reynolds stresses
-    P = -uvmean.*dUmeandy; % production term in TKE eqn.
-
-    % compute turbulent transport
-    Kpoint = 0.5*(u.^2 + v.^2 + w.^2); % pointwise kinetic energy
-    Kpvmean = mean(Kpoint.*v,[1,3]); % turb. wall-normal advection
-    T = -getDerivative(Kpvmean,y_cc); % turb. transport in TKE eqn.
-
-    % compute viscous transport
-    Kpmean = mean(Kpoint,[1,3]); % wall-normal TKE profile
-    viscTrans = nu*getDerivative(getDerivative(Kpmean,y_cc),y_cc); % viscous transport in TKE eqn.
-    
-    % compute pressure transport
-    vpMean = mean(v.*p,[1,3]); % pressure-(v-velocity) corr.
-    pressTrans = -getDerivative(vpMean,y_cc); % pressure transport in TKE eqn.
-    pressTransPlus = pressTrans/((utau^4)/nu); % normalize in plus units
-    
-    % compute dissipation
-    % call the function provided to the compute strain rate tensor:
-    [S11,S12,S13,S22,S23,S33] = compute_Sij(u,v,w,x_cc,y_cc,z_cc);
-    Sijsum = S11.^2 + S12.^2 + S13.^2 +... % squared Frobenius norm sum
-    S12.^2 + S22.^2 + S23.^2 +...
-    S13.^2 + S23.^2 + S33.^2;
-    Sijsummean = squeeze(mean(Sijsum,[1,3])).'; % average sum over x and z
-    D = -2*nu*Sijsummean; % dissipation in TKE eqn.
-
+    % Mass flux coupling (C)
+    C = mean(squeeze(vel_fluc(1,:,:,:)),[1 3]).*(squeeze(dsigmean_dy(1,2,:,:,:))) ...
+      + mean(squeeze(vel_fluc(2,:,:,:)),[1 3]).*(squeeze(dsigmean_dy(2,2,:,:,:)) - dpmean_dy) ...
+      + mean(squeeze(vel_fluc(3,:,:,:)),[1 3]).*(squeeze(dsigmean_dy(3,2,:,:,:)));
 end
 
 % f_compute_energy_spectrum
-function [k E] = f_compute_energy_spectrum(vel_fluc)
-    [k, E] = compute_energy_spectrum(squeeze(vel_fluc(1,:,floor(np(l)/2),:)), squeeze(vel_fluc(2,:,floor(np(l)/2),:)), squeeze(vel_fluc(3,:,floor(np(l)/2),:)), Lx(l), Lz(l));
-    E = E/(2^2*mth(q));
-    k = k*mth(q);
+function [k E] = f_compute_energy_spectrum(vel_fluc, mth)
+
+    load variables/global_parameters.mat;
+
+    [k, E] = compute_energy_spectrum(squeeze(vel_fluc(1,:,floor(np/2),:)), squeeze(vel_fluc(2,:,floor(np/2),:)), squeeze(vel_fluc(3,:,floor(np/2),:)), Lx, Lz);
+    E = E/(2^2*mth);
+    k = k*mth;
 end
 
 % f_compute_vorticity
@@ -425,6 +373,63 @@ function omega = f_compute_vorticity(dvel_ds)
     omega(2,:,:,:) = dvel_ds(1,3,:,:,:) - dvel_ds(3,1,:,:,:);
     omega(3,:,:,:) = dvel_ds(2,1,:,:,:) - dvel_ds(1,2,:,:,:);
 
+end
+
+%% HELPER FUNCTIONS
+% compute the wall-normal derivative of a discretized function, fun(y)
+function dfunds = f_compute_derivative_1d(fun,s)
+
+    dfunds = zeros(size(fun));    % initialize discrete derivative vector
+
+    for j = 1:length(s) % for each index in s
+        if j == 1   % if at bottom boundary, use 1-sided derivative
+            dfunds(j) = (fun(j+1) - fun(j))/(s(j+1) - s(j));
+        elseif j == length(s)% if at top boundary, use 1-sided derivative
+            dfunds(j) = (fun(j) - fun(j-1))/(s(j) - s(j-1));
+        else    % otherwise, if in the interior of the domain, 2-sided derivative
+            dfunds(j) = (fun(j+1) - fun(j-1))/((s(j+1) - s(j-1)));
+        end
+    end
+end
+
+% compute the wall-normal derivative of a discretized function, fun(y)
+function dfunds = f_compute_derivative_3d(fun,s,dir)
+
+    dfunds = zeros(size(fun));    % initialize discrete derivative vector
+
+    if (dir == 1)
+        for j = 1:length(s) % for each index in s
+            if j == 1   % if at bottom boundary, use 1-sided derivative
+                dfunds(j,:,:) = (fun(j+1,:,:) - fun(j,:,:))/(s(j+1) - s(j));
+            elseif j == length(s)% if at top boundary, use 1-sided derivative
+                dfunds(j,:,:) = (fun(j,:,:) - fun(j-1,:,:))/(s(j) - s(j-1));
+            else    % otherwise, if in the interior of the domain, 2-sided derivative
+                dfunds(j,:,:) = (fun(j+1,:,:) - fun(j-1,:,:))/((s(j+1) - s(j-1)));
+            end
+        end
+    elseif (dir == 2)
+        for j = 1:length(s) % for each index in s
+            if j == 1   % if at bottom boundary, use 1-sided derivative
+                dfunds(:,j,:) = (fun(:,j+1,:) - fun(:,j,:))/(s(j+1) - s(j));
+            elseif j == length(s)% if at top boundary, use 1-sided derivative
+                dfunds(:,j,:) = (fun(:,j,:) - fun(:,j-1,:))/(s(j) - s(j-1));
+            else    % otherwise, if in the interior of the domain, 2-sided derivative
+                dfunds(:,j,:) = (fun(:,j+1,:) - fun(:,j-1,:))/((s(j+1) - s(j-1)));
+            end
+        end
+    elseif (dir == 3)
+        for j = 1:length(s) % for each index in s
+            if j == 1   % if at bottom boundary, use 1-sided derivative
+                dfunds(:,:,j) = (fun(:,:,j+1) - fun(:,:,j))/(s(j+1) - s(j));
+            elseif j == length(s)% if at top boundary, use 1-sided derivative
+                dfunds(:,:,j) = (fun(:,:,j) - fun(:,:,j-1))/(s(j) - s(j-1));
+            else    % otherwise, if in the interior of the domain, 2-sided derivative
+                dfunds(:,:,j) = (fun(:,:,j+1) - fun(:,:,j-1))/((s(j+1) - s(j-1)));
+            end
+        end
+    else
+        disp("Wrong dir input");
+    end
 end
 
 %% PLOTS
@@ -498,7 +503,7 @@ function plot_jpdf_pres_omega_xy(pres, omega_xy, timestep)
     ylabel('$\omega_{xy}$','Interpreter','latex');
     set(gca,'TickLabelInterpreter','latex');
 
-    saveas(f1,post_stat_dir + "/jpdf_pres_vor/jpdf_tstep_"+string(timestep),"png"); 
+    saveas(f1,post_stat_dir + "/jpdf_pres_omega_xy/jpdf_tstep_"+string(timestep),"png"); 
     close(f1);
 end
 
@@ -521,17 +526,89 @@ function plot_energy_spectrum(k, E, timestep)
 end
 
 % plot_tke_budget
-function plot_tke_budget(y_norm,T,P,D,S,C,timestep)
+function plot_tke_budget(y_norm, T, P, D, S, C, timestep)
 
     load variables/global_parameters.mat;
 
+    f1 = figure("DefaultAxesFontSize",18);
+
+    plot(y_norm,T,'-bo','LineWidth',2); hold on; grid on;
+    plot(y_norm,P,'-go','LineWidth',2);
+    plot(y_norm,D,'-ro','LineWidth',2);
+    % plot(y_norm,S,'-mo','LineWidth',2);
+    % plot(y_norm,C,'-go','LineWidth',2);
+    xlim([-5 5]);
+    % ylim([-0.01 0.02]);
+    xlabel('$y/\delta_\theta$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    
+    saveas(f1, post_stat_dir + "/tke_budget/tke_budget_tstep_"+string(timestep),"png");
+    close(f1);
+end
+
+% plot_tke_budget
+function plot_tke_budget_T_components(y_norm, T0, T1, T2, T3, timestep)
+
+    load variables/global_parameters.mat;
+
+    f1 = figure("DefaultAxesFontSize",18);
+    plot(y_norm',T0,'-k','LineWidth',4); hold on; grid on;
+    plot(y_norm',T1,'-b^','LineWidth',2);
+    plot(y_norm',T2,'-ro','LineWidth',2);
+    plot(y_norm',T3,'-g>','LineWidth',2);
+    xlim([-5 5]);
+    % ylim([-0.01 0.02]);
+    xlabel('$y/\delta_\theta$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    
+    saveas(f1, post_stat_dir + "/tke_budget/T_components_tstep_"+string(timestep),"png");
+    close(f1);
+end
+
+% plot_tke_budget
+function plot_tke_budget_Tderiv_components(y_norm, T0, T1, T2, T3, timestep)
+
+    load variables/global_parameters.mat;
+
+    f1 = figure("DefaultAxesFontSize",18);
+    plot(y_norm',T0,'-k','LineWidth',4); hold on; grid on;
+    plot(y_norm',T1,'-b^','LineWidth',2);
+    plot(y_norm',T2,'-ro','LineWidth',2);
+    plot(y_norm',T3,'-g>','LineWidth',2);
+    xlim([-5 5]);
+    % ylim([-0.01 0.02]);
+    xlabel('$y/\delta_\theta$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    
+    saveas(f1, post_stat_dir + "/tke_budget/Tderiv_components_tstep_"+string(timestep),"png");
+    close(f1);
+end
+
+% plot_tke_budget
+function plot_tke_budget_P_components(y_norm, P, P1, P2, P3, timestep)
+
+    load variables/global_parameters.mat;
+
+    f1 = figure("DefaultAxesFontSize",18);
+    plot(y_norm',P,'-k','LineWidth',4); hold on; grid on;
+    plot(y_norm',P1,'-b^','LineWidth',2);
+    plot(y_norm',P2,'-ro','LineWidth',2);
+    plot(y_norm',P3,'-g>','LineWidth',2);
+    xlim([-5 5]);
+    % ylim([-0.01 0.02]);
+    xlabel('$y/\delta_\theta$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    
+    saveas(f1, post_stat_dir + "/tke_budget/P_components_tstep_"+string(timestep),"png");
+    close(f1);
 end
 
 % plot_min_pressure
 function plot_min_pressure(time, pres_min)
 
     load variables/linestyle.mat;
-    
+    load variables/global_parameters.mat;
+
     f1 = figure("DefaultAxesFontSize", 18);     
 
     plot(time,pres_min,'-ko','LineWidth',2); hold on; grid on;
@@ -550,6 +627,7 @@ end
 function plot_mom_thickness(time, mth)
 
     load variables/linestyle.mat;
+    load variables/global_parameters.mat;
 
     f1 = figure("DefaultAxesFontSize", 18); 
     
@@ -565,12 +643,12 @@ end
 
 %% PRINT DATA
 % print_kolmogorov_length
-function print_kolmogorov_length(time, eta_max, eta_min)
+function print_kolmogorov_length(time, eta_min)
 
     load variables/global_parameters.mat;
 
     fileID = fopen(post_stat_dir + "/kolmogorov_length.dat",'w');
-    fprintf(fileID,'%12.8f %12.8f %12.8f\r\n',[time; eta_max; eta_min]);
+    fprintf(fileID,'%12.8f %12.8f %12.8f\r\n',[time; eta_min]);
     fclose(fileID);
 
 end

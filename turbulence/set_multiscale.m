@@ -40,7 +40,7 @@ function set_multiscale(ncase)
     % x_b(:) = 1;
     % u_b(:) = 1;
 
-    % Reynolds number
+    % Reynolds number in mixing layer scale
     Re0 = 50;
 
     % Vapor pressure

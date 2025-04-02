@@ -19,7 +19,7 @@ function set_global_parameters(l)
     % Post stat saving directory
     post_stat_dir = mfc_dir(l) + "/post_stat";
 
-    %
+    % Reynolds number
     Re = Re0;
 
     save variables/global_parameters.mat
