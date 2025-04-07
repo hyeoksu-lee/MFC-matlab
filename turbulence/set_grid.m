@@ -48,7 +48,7 @@ function set_grid()
     end
     dy = y_cb(2:npp) - y_cb(1:np);
     y_cc = (y_cb(2:npp) + y_cb(1:np))/2;
-    
+
     %% z-dir
     for i = 1:ppp
         z_cb(i) = (i - 1)*Lz/pp;

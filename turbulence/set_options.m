@@ -2,13 +2,15 @@ function set_options(ncase)
 
     load variables/multiscale.mat;
 
-    bubbles_wrt_x = zeros(ncase,1);
-    bubbles_wrt_y = zeros(ncase,1);
-    bubbles_wrt_z = zeros(ncase,1);
-
     % Options
-    read_raw_data       = "F";
-    avg_over_self_sim   = "T";
+    read_raw_data       = "T";
+    pres_stat           = "F";
+    vorticity           = "F";
+    Reynolds_stress     = "T";
+    kolmogorov          = "F";
+    tke_budget          = "F";
+    energy_spectrum     = "F";
+    avg_over_self_sim   = "F";
     
     % Bubbles
     bubbles             = "F";

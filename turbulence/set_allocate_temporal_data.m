@@ -11,7 +11,8 @@ function set_allocate_temporal_data()
     mth = zeros(1,Nfiles);       % Momentum thickness
 
     %% y-normalized
-    y_norm = zeros(np,Nfiles);
+    y_norm_mth = zeros(np,Nfiles);
+    y_norm_vth = zeros(np,Nfiles);
 
     %% Minimum pressure
     pres_min = zeros(1,Nfiles);

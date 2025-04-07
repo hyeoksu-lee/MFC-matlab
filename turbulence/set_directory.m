@@ -4,7 +4,11 @@ function set_directory()
     ncase = 1;
 
     %% Proj dir
-    proj_dir = ["p010-ml3-001/Re50/weno_Re_flux_T/weno5m/N511";
+    proj_dir = ["p011-ml3-002/weno5m";
+                % "p011-ml3-001";
+                % "p009-ml3-002/single/Re160";
+                % "p009-ml3-007/Re160/sglrun";
+                % "p010-ml3-001/Re50/weno_Re_flux_F/weno-cu6/N511";
                 ];
 
     %% Input data location
@@ -35,6 +39,9 @@ function set_directory()
         end
         if ~exist(strcat(mfc_dir(i),"/post_stat/energy_spectrum"), "dir")
             mkdir(strcat(mfc_dir(i),"/post_stat/energy_spectrum"));
+        end
+        if ~exist(strcat(mfc_dir(i),"/post_stat/Reynolds_stress"), "dir")
+            mkdir(strcat(mfc_dir(i),"/post_stat/Reynolds_stress"));
         end
     end
 
