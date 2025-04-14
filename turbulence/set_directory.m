@@ -4,7 +4,9 @@ function set_directory()
     ncase = 1;
 
     %% Proj dir
-    proj_dir = ["p011-ml3-002/weno5m";
+    proj_dir = ["p012-ml3-001/weno5m";
+                "p009-ml3-002/single/Re160";
+                % "p011-ml3-002/wcns6ld";
                 % "p011-ml3-001";
                 % "p009-ml3-002/single/Re160";
                 % "p009-ml3-007/Re160/sglrun";

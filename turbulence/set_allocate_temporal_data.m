@@ -27,6 +27,10 @@ function set_allocate_temporal_data()
     eta_min = zeros(1,Nfiles);
     eta_max = zeros(1,Nfiles);
 
+    %% Integrated TKE budget
+    Pintegrated = zeros(1,Nfiles);
+    Dintegrated = zeros(1,Nfiles);
+
     %% Save variables
     save variables/temporal_data.mat
 end

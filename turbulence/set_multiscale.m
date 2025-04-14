@@ -22,11 +22,11 @@ function set_multiscale(ncase)
     gamma = gamma_w;
     pi_inf = pi_inf_w;
     Gamma = Gamma_w;
-    Pi_inf = 92.74140311626684*8236;
+    Pi_inf = 22.312399959394575*8236;
 
     %% Mixing layer scale
     x_m = 0.002475/2;        % [m] half of initial vorticity thickness
-    u_m = 3.4343*2;          % [m/s] velocity difference
+    u_m = 3.4343;          % [m/s] velocity difference
 
     pres0 = 8236;            % [N/m2] Initial pressure corresponding to Ca = 1
     Pi_inf = Pi_inf / (rho_w*u_m^2);

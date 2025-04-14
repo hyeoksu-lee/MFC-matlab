@@ -4,13 +4,13 @@ function set_options(ncase)
 
     % Options
     read_raw_data       = "T";
-    pres_stat           = "F";
+    pres_stat           = "T";
     vorticity           = "F";
     Reynolds_stress     = "T";
     kolmogorov          = "F";
     tke_budget          = "F";
     energy_spectrum     = "F";
-    avg_over_self_sim   = "F";
+    avg_over_self_sim   = "F"; start_idx = 60;
     
     % Bubbles
     bubbles             = "F";

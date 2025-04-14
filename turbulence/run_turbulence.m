@@ -39,12 +39,12 @@ for l = 1:ncase
     toc
 
     % Parallized loop over timesteps
-    parpool("Processes",20)
+    % parpool("Processes",2)
     if (read_raw_data == "T")
-        parfor q = 1:Nfiles
+        for q = 1:Nfiles
             
-            task = getCurrentTask();
-            fprintf('Worker %d is processing file index %d\n', task.ID, q);
+            % task = getCurrentTask();
+            % fprintf('Worker %d is processing file index %d\n', task.ID, q);
 
             % Read data in conservative form
             disp("read data")
@@ -127,6 +127,11 @@ for l = 1:ncase
                 [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, dpmean_dy, squeeze(qp(1,:,:,:)), qp_fluc(momxb:momxe,:,:,:), squeeze(qp(E_idx,:,:,:)), mth(q), y_norm_mth(:,q), timesteps(q));
                 plot_tke_budget(y_norm_mth(:,q), T, P, D, S, C, timesteps(q));
                 toc
+                % Compute integrated TKE budget
+                tic
+                Pintegrated(q) = trapz(y_cc,P);
+                Dintegrated(q) = trapz(y_cc,D);
+                toc
             end
 
             if (energy_spectrum == "T")
@@ -165,7 +170,10 @@ for l = 1:ncase
             plot_min_pressure(time, pres_min);
         end
         if (Reynolds_stress == "T")
-            plot_Reynolds_stress(y_norm_mth, ruu, rvv, rww, ruv, "all");
+            plot_Reynolds_stress(y_norm_vth, ruu, rvv, rww, ruv, "all");
+        end
+        if (tke_budget == "T")
+            plot_integrated_tke_budget(time, Pintegrated, Dintegrated);
         end
         toc
     end
@@ -305,10 +313,10 @@ function [vth mth y_norm_mth y_norm_vth] = f_compute_mixing_layer_thickness(qp_m
     load variables/index.mat;
 
     % Compute vorticity thickness
-    vth = 1 / max(abs(dvelmean_dy(1,:)),[],"all");
+    vth = 2 / max(abs(dvelmean_dy(1,:)),[],"all");
     
     % Compute momentum thickness
-    f = qp_mean(1,:) .* (0.5 - qp_mean(momxb, :)) .* (0.5 + qp_mean(momxb, :));
+    f = qp_mean(1,:) .* (1 - qp_mean(momxb, :)) .* (1 + qp_mean(momxb, :)) / 4;
     mth = trapz(y_cc,f);
 
     % Compute mth-normalized y value
@@ -326,10 +334,10 @@ function [ruu rvv rww ruv] = f_compute_Reynolds_stress(rho, vel_fluc)
     vel_fluc3 = squeeze(vel_fluc(3, :, :, :));
 
     % Compute Reynolds stress
-    ruu = mean(rho .* vel_fluc1.^2, [1 3]);
-    rvv = mean(rho .* vel_fluc2.^2, [1 3]);
-    rww = mean(rho .* vel_fluc3.^2, [1 3]);
-    ruv = mean(rho .* vel_fluc1.*vel_fluc2, [1 3]);
+    ruu = mean(rho .* vel_fluc1.^2, [1 3]) / 2;
+    rvv = mean(rho .* vel_fluc2.^2, [1 3]) / 2;
+    rww = mean(rho .* vel_fluc3.^2, [1 3]) / 2;
+    ruv = mean(rho .* vel_fluc1.*vel_fluc2, [1 3]) / 2;
 end
 
 % f_compute_strain_rate_tensor
@@ -365,7 +373,6 @@ function [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, d
 
     load variables/global_parameters.mat;
     load variables/grid.mat;
-    load variables/options.mat;
 
     % Compute strain-rate tensor
     [SS S11 S12 S13 S22 S23 S33] = f_compute_strain_rate_tensor(dvel_ds);
@@ -393,7 +400,8 @@ function [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, d
         end
     end
     sigfluc = sig - permute(repmat(sigmean, [1 1 1 mp pp]), [1 2 4 3 5]);
-
+    clear sig SS S11 S12 S13 S21 S22 S23 S31 S32 S33
+    
     % Transport (T)
     T1 = -0.5*mean(...
          rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)) ...
@@ -404,28 +412,20 @@ function [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, d
          squeeze(sigfluc(1,2,:,:,:)).*squeeze(vel_fluc(1,:,:,:)) ...
        + squeeze(sigfluc(2,2,:,:,:)).*squeeze(vel_fluc(2,:,:,:)) ...
        + squeeze(sigfluc(3,2,:,:,:)).*squeeze(vel_fluc(3,:,:,:)),[1 3]);
-    T1 = T1 / (1/mth); % normalization
-    T2 = T2 / (1/mth); % normalization
-    T3 = T3 / (1/mth); % normalization
+    T1 = T1 / (8/mth); % normalization
+    T2 = T2 / (8/mth); % normalization
+    T3 = T3 / (8/mth); % normalization
     T0 = T1 + T2 + T3;
-    plot_tke_budget_T_components(y_norm_mth, T0, T1, T2, T3, timestep);
     T = f_compute_derivative_1d(T0,y_cc); 
-    T1deriv = f_compute_derivative_1d(T1,y_cc); 
-    T2deriv = f_compute_derivative_1d(T2,y_cc); 
-    T3deriv = f_compute_derivative_1d(T3,y_cc); 
-    plot_tke_budget_Tderiv_components(y_norm_mth, T, T1deriv, T2deriv, T3deriv, timestep);
-    % clear T0 T1 T2 T3
 
     % Turbulent production (P)
     P1 = -mean(rho.*squeeze(vel_fluc(1,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*squeeze(dvelmean_dy(1,:));
     P2 = -mean(rho.*squeeze(vel_fluc(2,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*squeeze(dvelmean_dy(2,:));
     P3 = -mean(rho.*squeeze(vel_fluc(3,:,:,:).*vel_fluc(2,:,:,:)),[1 3]).*squeeze(dvelmean_dy(3,:));
-    P1 = P1 / (1/mth); % normalization
-    P2 = P2 / (1/mth); % normalization
-    P3 = P3 / (1/mth); % normalization
+    P1 = P1 / (8/mth); % normalization
+    P2 = P2 / (8/mth); % normalization
+    P3 = P3 / (8/mth); % normalization
     P = P1 + P2 + P3;
-    plot_tke_budget_P_components(y_norm_mth, P, P1, P2, P3, timestep);
-    % clear P1 P2 P3
 
     % Dissipation (D)
     D = -mean(squeeze(sigfluc(1,1,:,:,:).*dvelfluc_ds(1,1,:,:,:) ...
@@ -437,19 +437,19 @@ function [T P D S C] = f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, d
                     + sigfluc(1,3,:,:,:).*dvelfluc_ds(1,3,:,:,:) ...
                     + sigfluc(2,3,:,:,:).*dvelfluc_ds(2,3,:,:,:)  ...
                     + sigfluc(3,3,:,:,:).*dvelfluc_ds(3,3,:,:,:)), [1 3]);
-    D = D / (1/mth); % normalization
+    D = D / (8/mth); % normalization
 
     % Pressure-strain (S)
     S = mean(pres_fluc.*squeeze(dvelfluc_ds(1,1,:,:,:)),[1 3]) ...
       + mean(pres_fluc.*squeeze(dvelfluc_ds(2,2,:,:,:)),[1 3]) ...
       + mean(pres_fluc.*squeeze(dvelfluc_ds(3,3,:,:,:)),[1 3]);
-    S = S / (1/mth); % normalization
+    S = S / (8/mth); % normalization
 
     % Mass flux coupling (C)
     C = mean(squeeze(vel_fluc(1,:,:,:)),[1 3]).*(squeeze(dsigmean_dy(1,2,:))) ...
       + mean(squeeze(vel_fluc(2,:,:,:)),[1 3]).*(squeeze(dsigmean_dy(2,2,:)) - dpmean_dy) ...
       + mean(squeeze(vel_fluc(3,:,:,:)),[1 3]).*(squeeze(dsigmean_dy(3,2,:)));
-    C = C / (1/mth); % normalization
+    C = C / (8/mth); % normalization
 
     save(post_stat_dir+"/tke_budget_data/tke_budget_"+string(timestep)+".mat","y_norm_mth","T1","T2","T3","P1","P2","P3","D","mth");
 
@@ -460,6 +460,7 @@ function f_average_tke_budget()
 
     load variables/global_parameters.mat;
     load variables/grid.mat;
+    load variables/options.mat;
 
     ybeg = -5; yend = 5; ny = 101;
     y = linspace(ybeg,yend,ny);
@@ -472,19 +473,19 @@ function f_average_tke_budget()
     P3_averaged = zeros(ny,1);
     D_averaged = zeros(ny,1);
     
-    for q = 1:Nfiles
+    for q = start_idx:Nfiles
         load(post_stat_dir+"/tke_budget_data/tke_budget_"+string(timesteps(q))+".mat");
         i_start = 1;
         for j = 1:ny
             for i = i_start:length(y_norm_mth) - 1
                 if (y_norm_mth(i) <= y(j) && y_norm_mth(i+1) > y(j))
-                    T1_averaged(j) = T1_averaged(j) + ((T1(i+1) - T1(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + T1(i))/Nfiles;
-                    T2_averaged(j) = T2_averaged(j) + ((T2(i+1) - T2(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + T2(i))/Nfiles;
-                    T3_averaged(j) = T3_averaged(j) + ((T3(i+1) - T3(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + T3(i))/Nfiles;
-                    P1_averaged(j) = P1_averaged(j) + ((P1(i+1) - P1(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + P1(i))/Nfiles;
-                    P2_averaged(j) = P2_averaged(j) + ((P2(i+1) - P2(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + P2(i))/Nfiles;
-                    P3_averaged(j) = P3_averaged(j) + ((P3(i+1) - P3(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + P3(i))/Nfiles;
-                    D_averaged(j) = D_averaged(j) + ((D(i+1) - D(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + D(i))/Nfiles;
+                    T1_averaged(j) = T1_averaged(j) + ((T1(i+1) - T1(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + T1(i))/(Nfiles - start_idx + 1);
+                    T2_averaged(j) = T2_averaged(j) + ((T2(i+1) - T2(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + T2(i))/(Nfiles - start_idx + 1);
+                    T3_averaged(j) = T3_averaged(j) + ((T3(i+1) - T3(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + T3(i))/(Nfiles - start_idx + 1);
+                    P1_averaged(j) = P1_averaged(j) + ((P1(i+1) - P1(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + P1(i))/(Nfiles - start_idx + 1);
+                    P2_averaged(j) = P2_averaged(j) + ((P2(i+1) - P2(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + P2(i))/(Nfiles - start_idx + 1);
+                    P3_averaged(j) = P3_averaged(j) + ((P3(i+1) - P3(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + P3(i))/(Nfiles - start_idx + 1);
+                    D_averaged(j) = D_averaged(j) + ((D(i+1) - D(i))/(y_norm_mth(i+1) - y_norm_mth(i))*(y(j) - y_norm_mth(i)) + D(i))/(Nfiles - start_idx + 1);
                     i_start = i;
                     break;
                 end
@@ -493,35 +494,8 @@ function f_average_tke_budget()
     end 
 
     T0_averaged = T1_averaged + T2_averaged + T3_averaged;
-    T1deriv_averaged = f_compute_derivative_1d(T1_averaged,y*mth); 
-    T2deriv_averaged = f_compute_derivative_1d(T2_averaged,y*mth); 
-    T3deriv_averaged = f_compute_derivative_1d(T3_averaged,y*mth); 
     T_averaged = f_compute_derivative_1d(T0_averaged,y*mth); 
     P_averaged = P1_averaged + P2_averaged + P3_averaged;
-
-    %
-    f1 = figure("DefaultAxesFontSize",18);
-    plot(y,T0_averaged,'-k','LineWidth',4); hold on; grid on;
-    plot(y,T1_averaged,'-b^','LineWidth',2);
-    plot(y,T2_averaged,'-ro','LineWidth',2);
-    plot(y,T3_averaged,'-g>','LineWidth',2);
-    % xlim([-5 5]); %ylim([-0.002 0.002]);
-    xlabel('$y/\delta_\theta$','interpreter','latex');
-    set(gca,'TickLabelInterpreter','latex');
-    saveas(f1, post_stat_dir + "/tke_budget/T_components_self_similar","png");
-    close(f1);
-
-    %
-    f1 = figure("DefaultAxesFontSize",18);
-    plot(y,T_averaged,'-k','LineWidth',4); hold on; grid on;
-    plot(y,T1deriv_averaged,'-b^','LineWidth',2);
-    plot(y,T2deriv_averaged,'-ro','LineWidth',2);
-    plot(y,T3deriv_averaged,'-g>','LineWidth',2);
-    % xlim([-5 5]); %ylim([-0.002 0.002]);
-    xlabel('$y/\delta_\theta$','interpreter','latex');
-    set(gca,'TickLabelInterpreter','latex');
-    saveas(f1, post_stat_dir + "/tke_budget/Tderiv_components_self_similar","png");
-    close(f1);
 
     %
     f1 = figure("DefaultAxesFontSize",18);
@@ -617,7 +591,7 @@ function plot_pdf_pressure(pres,timestep)
     f1 = figure("DefaultAxesFontSize",18);
     
     histogram(reshape(pres,[],1),[-3:0.002:1.5],'EdgeColor','k','LineWidth',1.5,'Normalization','pdf', 'DisplayStyle', 'stairs'); hold on; grid on;
-    plot([pv pv],[1e-6 1e4],'r--','LineWidth',1.5);
+    plot([pv pv],[1e-8 1e4],'r--','LineWidth',1.5);
     xlim([-3 2]); 
     set(gca, 'YScale', 'log');
     xlabel('$p$','interpreter','latex');
@@ -819,13 +793,15 @@ end
 % plot_growth_rate
 function plot_growth_rate(time, mth)
 
+    load variables/global_parameters.mat;
+
     % Growth rate
     dmth = (mth(2:end) - mth(1:end-1)) ./ (time(2:end) - time(1:end-1));
 
     % Integrated growth rate
     f_growth_rate = figure("DefaultAxesFontSize", 18); 
 
-    plot(time,dmth,'-ko','LineWidth',2); hold on; grid on;
+    plot(time(1:end-1),dmth,'-ko','LineWidth',2); hold on; grid on;
     plot([0 max(time)],[0.014 0.014], 'r--','LineWidth',2);
     plot([0 max(time)],[0.016 0.016], 'b--','LineWidth',2);
     plot([0 max(time)],[0.022 0.022], 'g--','LineWidth',2);
@@ -934,6 +910,25 @@ function plot_Reynolds_stress(y_norm_mth, ruu, rvv, rww, ruv, timestep)
     close(f1);
 
 end
+
+% plot_integrated_tke_budget
+function plot_integrated_tke_budget(time, Pintegrated, Dintegrated)
+
+    load variables/global_parameters.mat;
+
+    f1 = figure("DefaultAxesFontSize", 18); 
+    
+    plot(time,Pintegrated,'-ro','LineWidth',2); hold on; grid on;
+    plot(time,Dintegrated,'-bo','LineWidth',2);
+    xlim([min(time) max(time)]);
+    xlabel('$t U_1 / \delta_\omega^0$','interpreter','latex');
+    % ylabel('$\delta / \delta_\omega^0$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+
+    saveas(f1, post_stat_dir + "/integrated_tke_budget.png"); 
+    close(f1);
+end
+
 
 %% PRINT DATA
 % print_kolmogorov_length
