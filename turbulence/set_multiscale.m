@@ -42,10 +42,11 @@ function set_multiscale(ncase)
     pv = 2338.8 / (rho_w*u_m^2);
 
     % %% For single phase flow
-    % x_m = 1;
-    % u_m = 1;
-    % x_b = 1;
-    % u_b = 1;
+    x_m = 1;
+    u_m = 1;
+    x_b = 1;
+    u_b = 1;
+    Pi_inf = 15.580670448999415;
 
     save variables/multiscale.mat Gamma Pi_inf pv Re0 x_m u_m x_b u_b;
 end

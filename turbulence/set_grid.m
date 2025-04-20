@@ -44,7 +44,8 @@ function set_grid()
                                     - 2*log(cosh(a_y*(y_b - y_a)/2)));
             end
         end        
-        y_cb = y_cb/(y_cb(npp) - y_cb(1))*Ly;
+        y_cb = y_cb*Ly;
+        % y_cb = y_cb/(y_cb(npp) - y_cb(1))*Ly;
     end
     dy = y_cb(2:npp) - y_cb(1:np);
     y_cc = (y_cb(2:npp) + y_cb(1:np))/2;

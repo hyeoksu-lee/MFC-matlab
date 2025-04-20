@@ -802,13 +802,19 @@ function plot_growth_rate(time, mth)
     f_growth_rate = figure("DefaultAxesFontSize", 18); 
 
     plot(time(1:end-1),dmth,'-ko','LineWidth',2); hold on; grid on;
-    plot([0 max(time)],[0.014 0.014], 'r--','LineWidth',2);
-    plot([0 max(time)],[0.016 0.016], 'b--','LineWidth',2);
-    plot([0 max(time)],[0.022 0.022], 'g--','LineWidth',2);
+    plot([0 max(time)],[0.012 0.012], 'r--','LineWidth',1);
+    plot([0 max(time)],[0.0135 0.0135], 'b--','LineWidth',1);
+    plot([0 max(time)],[0.014 0.014], 'g--','LineWidth',1);
+    plot([0 max(time)],[0.017 0.017], 'm--.','LineWidth',1);
     axis([0 max(time) 0 0.1]);
     xlabel('$t \Delta U / \delta_\theta^0$','interpreter','latex');
-    ylabel('$\dot{\delta} / \Delta U$','interpreter','latex');
-    legend("$\mbox{Present}$","$0.014^{[1-4]}$","$0.016^{[5-6]}$","$0.022^{[1]}$",'Interpreter','latex','location','northeast');
+    ylabel('$\dot{\delta}_{\theta} / \Delta U$','interpreter','latex');
+    legend("$\mbox{Present}$",...
+            "$0.012^{[1]}$",...     % [1] Baltzer & Livescu (2020, JFM) 
+            "$0.0135^{[2]}$",...    % [2] Vaghefi (2014, Thesis) 
+            "$0.014^{[3,4]}$",...   % [3] Rogers & Moser (1993, PoF) [4] Blakeley et al. (2023, JFM)
+            "$0.017^{[5]}$",...     % [5] Almagro et al. (2017, JFM)
+            'Interpreter','latex','location','northeast');
     set(gca,'TickLabelInterpreter','latex');
 
     saveas(f_growth_rate, post_stat_dir+"/growth_rate.png"); 
@@ -904,6 +910,11 @@ function plot_Reynolds_stress(y_norm_mth, ruu, rvv, rww, ruv, timestep)
     yticks([0:0.05:0.25]);
     xlabel('$y/\delta_\omega$','Interpreter','latex'); 
     ylabel('$\sqrt{-\left< \overline{\rho} u^{\prime} v^{\prime}\right>}  / \Delta U$','Interpreter','latex');
+    legend("$\mbox{Present}$",...
+            "$\mbox{Bell & Mehta (1990)}$",...
+            "$\mbox{Vaghefi (2014)$",...
+            "$\mbox{Wang et al, (2022)}$",...
+            'Interpreter','latex','location','northeast');
     set(gca,'TickLabelInterpreter','latex');
 
     saveas(f1, post_stat_dir + "/Reynolds_stress/Reynolds_stress_"+string(timestep),"png");
