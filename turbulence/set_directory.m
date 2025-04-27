@@ -4,13 +4,7 @@ function set_directory()
     ncase = 1;
 
     %% Proj dir
-    proj_dir = ["p013-ml3-002/single";
-                % "p009-ml3-002/single/Re160";
-                % "p011-ml3-002/wcns6ld";
-                % "p011-ml3-001";
-                % "p009-ml3-002/single/Re160";
-                % "p009-ml3-007/Re160/sglrun";
-                % "p010-ml3-001/Re50/weno_Re_flux_F/weno-cu6/N511";
+    proj_dir = ["p010-ml3-001/Re50/weno_Re_flux_T/weno3m/N511";
                 ];
 
     %% Input data location

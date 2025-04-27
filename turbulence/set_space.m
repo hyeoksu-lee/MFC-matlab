@@ -10,17 +10,17 @@ function set_space(ncase)
 
     % x-direction
     Lx_list(:) = 160.0;
-    m_list(:) = 1023;
+    m_list(:) = 511;
     stretch_x = "F"; a_x = 2; x_a = -0.3*Lx_list; x_b = 0.3*Lx_list; loops_x = 2;
 
     % y-direction
     Ly_list(:) = 160.0;
-    n_list(:) = 1023; 
-    stretch_y = "T"; a_y = 2; y_a = -0.3*Ly_list; y_b = 0.3*Ly_list; loops_y = 2;
+    n_list(:) = 511; 
+    stretch_y = "F"; a_y = 2; y_a = -0.3*Ly_list; y_b = 0.3*Ly_list; loops_y = 2;
 
     % z-direction
     Lz_list(:) = 80.0;
-    p_list(:) = 511;
+    p_list(:) = 255;
     stretch_z = "F"; a_z = 2; z_a = -0.3*Lz_list; z_b = 0.3*Lz_list; loops_z = 2;
 
     save variables/space.mat

@@ -4,7 +4,7 @@ function set_options(ncase)
 
     % Options
     read_raw_data       = "T";
-    pres_stat           = "F";
+    pres_stat           = "T";
     vorticity           = "F";
     Reynolds_stress     = "T";
     kolmogorov          = "F";

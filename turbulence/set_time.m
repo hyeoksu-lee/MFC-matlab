@@ -9,10 +9,10 @@ function set_time(ncase)
     dt = zeros(ncase,1);
 
     % Time
-    Nt_beg(:) = 0;
-    Nt_end(:) = 1408*30;
-    Nt_save(:) = 1408;
-    dt(:) = 0.007102272727272727 .* (x_b./x_m) .* (u_m./u_b);
+    Nt_beg(:) = 0; %1408*21;
+    Nt_end(:) = 496*40;
+    Nt_save(:) = 496;
+    dt(:) = 0.4175308608629467 .* (x_b./x_m) .* (u_m./u_b);
 
     % Save
     save variables/time.mat;

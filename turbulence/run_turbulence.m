@@ -72,6 +72,7 @@ for l = 1:ncase
                 tic
                 % Compute minimum pressure PDF of minimum pressure
                 pres_min(q) = min(qp(E_idx,:,:,:),[],"all");
+
                 % Compute PDF of pressure
                 plot_pdf_pressure(qp(E_idx,:,:,:), timesteps(q));
                 toc
@@ -247,7 +248,7 @@ function [qp_mean qp_fluc] = f_compute_qp_mean_fluc(qp)
     % mean pressure
     qp_mean(E_idx,:) = squeeze(mean(qp(E_idx,:,:,:),[2 4]));
 
-    % density fluctuation
+    % fluctuation
     qp_fluc = qp - permute(repmat(qp_mean, [1 1 mp pp]), [1 3 2 4]);
 end
 
@@ -910,11 +911,11 @@ function plot_Reynolds_stress(y_norm_mth, ruu, rvv, rww, ruv, timestep)
     yticks([0:0.05:0.25]);
     xlabel('$y/\delta_\omega$','Interpreter','latex'); 
     ylabel('$\sqrt{-\left< \overline{\rho} u^{\prime} v^{\prime}\right>}  / \Delta U$','Interpreter','latex');
-    legend("$\mbox{Present}$",...
-            "$\mbox{Bell \& Mehta (1990)}$",...
-            "$\mbox{Vaghefi (2014)$",...
-            "$\mbox{Wang et al, (2022)}$",...
-            'Interpreter','latex','location','northeast');
+    % legend("$\mbox{Present}$",...
+    %         "$\mbox{Bell \& Mehta (1990)}$",...
+    %         "$\mbox{Vaghefi (2014)}$",...
+    %         "$\mbox{Wang et al (2022)}$",...
+    %         'Interpreter','latex','location','northeast');
     set(gca,'TickLabelInterpreter','latex');
 
     saveas(f1, post_stat_dir + "/Reynolds_stress/Reynolds_stress_"+string(timestep),"png");
