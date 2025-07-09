@@ -5,9 +5,10 @@ function set_user_inputs()
     artificial_mach = true;
     Reynolds_stress = false;
     tke_budget = false;
-    pres_stat = true;
-    vorticity = true;
+    pres_stat = false;
+    vorticity = false;
     energy_spectrum = false;
+    liutex = true;
 
     %% Reynolds number
     Re = 320;   % Reynolds number

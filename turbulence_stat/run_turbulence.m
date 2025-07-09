@@ -98,6 +98,13 @@ for i = 1:Nfiles
         disp("skipped");
     end
     toc;
+
+    % Compute Liutex
+    disp("[11/11] Compute Liutex"); tic;
+    if (liutex)
+        f_compute_liutex(dvel_ds);
+    end
+    toc;
 end
 disp("End of loop");
 
@@ -290,7 +297,7 @@ function [dvel_ds dvelmean_dy dvelfluc_ds] = f_compute_vel_derivatives(vel, vel_
     dvelmean_dy(2,:) = f_compute_derivative_1d(vel_mean(2,:),y_cc);
     dvelmean_dy(3,:) = f_compute_derivative_1d(vel_mean(3,:),y_cc);
 
-    if (tke_budget || vorticity)
+    if (tke_budget || vorticity || liutex)
         % Compute velocity derivatives
         vel1 = squeeze(vel(1,:,:,:));
         vel2 = squeeze(vel(2,:,:,:));
@@ -543,6 +550,75 @@ function [k, E] = compute_energy_spectrum(u, v, w, Lx, Lz)
             E(i) = sum(E_hat(mask)) / sum(mask(:));  % Average energy in the shell
         end
     end
+end
+
+% Compute liutex
+function liutex = f_compute_liutex(A)
+    load variables/user_inputs.mat;
+
+    liutex = zeros(size(A));
+    for k = 1:pp
+        for j = 1:np
+            for i = 1:mp
+                liutex(i,j,k) = compute_liutex(A(:,:,i,j,k));
+            end
+        end
+    end
+
+end
+
+% Partition VGT via normality-based decomposition (eig. methods)
+% Written by Rahul Arun (rarun@caltech.edu)
+% Inputs
+% A      : (3,3) - velocity gradient tensor
+% Outputs
+% A2_ns  : (1,1) - strength of normal straining
+% A2_ps  : (1,1) - strength of   pure shearing
+% A2_rr  : (1,1) - strength of  rigid rotation
+% A2_sr  : (1,1) - strength of  shear-rotation interaction term
+% rotAx  : (3,1) - axis     of  rigid rotation
+function liutex = compute_liutex(A)
+    
+    % check VGT
+    if ~isnumeric(A) || ~ismatrix(A) || any(~isfinite(A),'all') ||...
+            size(A,1) ~=3 || size(A,2) ~= 3
+        error('VGT must be a valid numeric array of size (3,3).')
+    end
+    
+    % vorticity vector
+    vort = [A(3,2) - A(2,3);...
+            A(1,3) - A(3,1);...
+            A(2,1) - A(1,2)];
+    
+    % eigendecomposition method
+    % note: see definitions in, e.g., https://doi.org/10.1063/1.5023001
+    %                             and https://doi.org/10.1063/1.5040112
+    [V,D]       = eig(A,'vector');     % eigenvalues and eigenvectors
+    [~,idxreal] = min(abs(imag(D)));   % find real eigenvalue
+    if sum(D == real(D)) == length(D)  % if   no rotation
+        rotAx_e = zeros(3,1,class_A);  % then no rotation axis
+    else                               % otherwise
+        rotAx_e = V(:,idxreal);        % rotation axis is real eigenvector
+    end
+    Lci  = max(abs(imag(D)));          % imaginary part of complex eigenvalues
+    beta = sum(vort.*rotAx_e)/2;       % vorticity along rotation axis
+    if beta < 0                        % if   rotation sign is incorrect
+        beta    = -1*beta;             % flip rotation sign
+        rotAx_e = -1*rotAx_e;          % flip rotation axis
+    end
+    if Lci > beta                      % if numerical noise is relevant
+        beta    = Lci;                 % prevent real/complex issues
+    end
+    alpha   = sqrt(beta^2 - Lci^2);    % shear contamination
+    liutex  = 2*(beta - alpha);        % rigid vorticity magnitude
+    vort_rr = liutex*rotAx_e;          % rigid vorticity vector
+    vort_ps = vort - vort_rr;          % shear vorticity vector
+    % partition VGT strengths
+    A2_rr_e = 0.5*liutex^2;            %  rigid rotation
+    A2_ps_e = sum(vort_ps.^2);         %   pure shearing
+    A2_ns_e = S2 - A2_ps_e/2;          % normal straining
+    A2_sr_e = W2 - A2_ps_e/2 - A2_rr_e;%  shear-rotation interaction term
+    clear idxreal Lci beta alpha vort_rr vort_ps
 end
 
 % Compute the wall-normal derivative of a discretized function, fun(y)
