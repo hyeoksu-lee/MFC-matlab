@@ -101,8 +101,19 @@ for i = 1:Nfiles
 
     % Compute Liutex
     disp("[11/11] Compute Liutex"); tic;
-    if (liutex)
-        f_compute_liutex(dvel_ds);
+    if (get_liutex)
+        liutex = f_compute_liutex(dvel_ds);
+
+        vel1 = squeeze(qp(momxb,:,:,:));
+        pres = squeeze(qp(E_idx,:,:,:));
+        save results/liutex_data.mat x_cc y_cc z_cc vel1 pres liutex
+        clear vel1 pres
+        % system('python3 -m venv venv');
+        % system('source venv/bin/activate');
+        % system('pip install pyvista scipy numpy');
+        system('python3 mat_to_vts.py');
+    else
+        disp("skipped");
     end
     toc;
 end
@@ -114,7 +125,12 @@ print_mixlayer_thickness(time,mth,vth); toc;
 
 % Compute mixing layer growth rate
 disp("Compute growth rate ..."); tic;
-plot_growth_rate(time,mth); toc;
+if (growth_rate)
+    plot_growth_rate(time,mth); 
+else
+    disp("skipped");
+end
+toc;
 
 disp("End of program");
 
@@ -297,7 +313,7 @@ function [dvel_ds dvelmean_dy dvelfluc_ds] = f_compute_vel_derivatives(vel, vel_
     dvelmean_dy(2,:) = f_compute_derivative_1d(vel_mean(2,:),y_cc);
     dvelmean_dy(3,:) = f_compute_derivative_1d(vel_mean(3,:),y_cc);
 
-    if (tke_budget || vorticity || liutex)
+    if (tke_budget || vorticity || get_liutex)
         % Compute velocity derivatives
         vel1 = squeeze(vel(1,:,:,:));
         vel2 = squeeze(vel(2,:,:,:));
@@ -495,13 +511,13 @@ function [k E] = f_compute_energy_spectrum(vel_fluc, mth)
 
     load variables/user_inputs.mat;
 
-    [k, E] = compute_energy_spectrum(squeeze(vel_fluc(1,:,floor(np/2),:)), squeeze(vel_fluc(2,:,floor(np/2),:)), squeeze(vel_fluc(3,:,floor(np/2),:)), Lx, Lz);
+    [k E] = compute_energy_spectrum(squeeze(vel_fluc(1,:,floor(np/2),:)), squeeze(vel_fluc(2,:,floor(np/2),:)), squeeze(vel_fluc(3,:,floor(np/2),:)), Lx, Lz);
     E = E/(2^2*mth);
     k = k*mth;
 end
 
 % Compute 1D energy spectrum
-function [k, E] = compute_energy_spectrum(u, v, w, Lx, Lz)
+function [k E] = compute_energy_spectrum(u, v, w, Lx, Lz)
     % COMPUTE_ENERGY_SPECTRUM - Computes 1D kinetic energy spectrum from 3D velocity fields
     % Inputs:
     %   u  - x-velocity field (3D array, size Nx x Ny)
@@ -556,7 +572,7 @@ end
 function liutex = f_compute_liutex(A)
     load variables/user_inputs.mat;
 
-    liutex = zeros(size(A));
+    liutex = zeros(mp,np,pp);
     for k = 1:pp
         for j = 1:np
             for i = 1:mp
@@ -585,8 +601,13 @@ function liutex = compute_liutex(A)
         error('VGT must be a valid numeric array of size (3,3).')
     end
     
-    % vorticity vector
-    vort = [A(3,2) - A(2,3);...
+    % Preliminary
+    A_S  = (A + A')/2;    % strain-rate tensor (symmetric)
+    A_W  = (A - A')/2;    % vorticity   tensor (antisymmetric)
+    S2   = sum(A_S(:).^2);% strain-rate strength
+    W2   = sum(A_W(:).^2);% vorticity   strength
+    vort = [... % vorticity vector
+            A(3,2) - A(2,3);...
             A(1,3) - A(3,1);...
             A(2,1) - A(1,2)];
     
@@ -596,7 +617,7 @@ function liutex = compute_liutex(A)
     [V,D]       = eig(A,'vector');     % eigenvalues and eigenvectors
     [~,idxreal] = min(abs(imag(D)));   % find real eigenvalue
     if sum(D == real(D)) == length(D)  % if   no rotation
-        rotAx_e = zeros(3,1,class_A);  % then no rotation axis
+        rotAx_e = zeros(3,1);          % then no rotation axis
     else                               % otherwise
         rotAx_e = V(:,idxreal);        % rotation axis is real eigenvector
     end
