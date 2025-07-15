@@ -2,9 +2,13 @@
 
 Reference:
 > Bell, J. H., & Mehta, R. D. (1990). Development of a two-stream mixing layer from tripped and untripped boundary layers. AIAA Journal, 28(12), 2034-2042.
+
 > Rogers, M. M., & Moser, R. D. (1994). Direct simulation of a self‐similar turbulent mixing layer. Physics of Fluids, 6(2), 903-923.
+
 > Pantano, C., & Sarkar, S. (2002). A study of compressibility effects in the high-speed turbulent shear layer using direct simulation. Journal of Fluid Mechanics, 451, 329-371.
+
 > Vaghefi, S. N. S. (2014). Simulation and modeling of compressible turbulent mixing layer. State University of New York at Buffalo.
+
 > Wang, X., Wang, J., & Chen, S. (2022). Compressibility effects on statistics and coherent structures of compressible turbulent mixing layers. Journal of Fluid Mechanics, 947, A38.
 
 ## Description

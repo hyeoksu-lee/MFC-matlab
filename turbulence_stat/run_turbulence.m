@@ -19,7 +19,7 @@ for i = 1:Nfiles
 
     % Read data in conservative form
     disp(" "); disp("[1/10] Read data ..."); tic;
-    qp = f_read_data(strcat("../restart_data/lustre_",int2str(timesteps(i)),".dat")); toc;
+    qp = f_read_data(strcat("../../restart_data/lustre_",int2str(timesteps(i)),".dat")); toc;
 
     % Compute mean quantities
     disp("[2/10] Compute mean and fluctuating quantities ..."); tic;
@@ -83,7 +83,7 @@ for i = 1:Nfiles
     if (tke_budget)
         f_compute_tke_budget(dvel_ds, dvelmean_dy, dvelfluc_ds, ...
                         squeeze(qp(1,:,:,:)), qp_fluc(momxb:momxe,:,:,:), squeeze(qp(E_idx,:,:,:)), ...
-                        y_norm_mth, mth(i), timesteps(i)); 
+                        y_norm_mth, mth(i), timesteps(i));
     else
         disp("skipped");
     end
@@ -101,17 +101,19 @@ for i = 1:Nfiles
 
     % Compute Liutex
     disp("[11/11] Compute Liutex"); tic;
-    if (get_liutex)
-        liutex = f_compute_liutex(dvel_ds);
-
-        vel1 = squeeze(qp(momxb,:,:,:));
-        pres = squeeze(qp(E_idx,:,:,:));
-        save results/liutex_data.mat x_cc y_cc z_cc vel1 pres liutex
-        clear vel1 pres
-        % system('python3 -m venv venv');
-        % system('source venv/bin/activate');
-        % system('pip install pyvista scipy numpy');
-        system('python3 mat_to_vts.py');
+    if (liutex_stat)
+        if (~vorticity) 
+            omega = f_compute_vorticity(dvel_ds);
+        end
+        [liutex_mag, qsv_candidate] = f_compute_liutex(dvel_ds);
+        plot_qsv_stat(liutex_mag, ...
+                    qsv_candidate, ...
+                    qp(E_idx,:,y_idx_beg:y_idx_end,:), ... % Pressure
+                    omega(:,y_idx_beg:y_idx_end,:) ... % Vorticity
+                    );
+        plot_jpdf_liutex_omega_xy();
+        plot_jpdf_liutex_pres();
+        plot_jpdf_pres_omega_xy();
     else
         disp("skipped");
     end
@@ -313,7 +315,7 @@ function [dvel_ds dvelmean_dy dvelfluc_ds] = f_compute_vel_derivatives(vel, vel_
     dvelmean_dy(2,:) = f_compute_derivative_1d(vel_mean(2,:),y_cc);
     dvelmean_dy(3,:) = f_compute_derivative_1d(vel_mean(3,:),y_cc);
 
-    if (tke_budget || vorticity || get_liutex)
+    if (tke_budget || vorticity || liutex_stat)
         % Compute velocity derivatives
         vel1 = squeeze(vel(1,:,:,:));
         vel2 = squeeze(vel(2,:,:,:));
@@ -569,14 +571,25 @@ function [k E] = compute_energy_spectrum(u, v, w, Lx, Lz)
 end
 
 % Compute liutex
-function liutex = f_compute_liutex(A)
+function [liutex_mag, qsv_candidate] = f_compute_liutex(A)
     load variables/user_inputs.mat;
 
-    liutex = zeros(mp,np,pp);
+    liutex_mag = zeros(mp,np,pp);
+    qsv_candidate = zeros(mp,np,pp);
     for k = 1:pp
         for j = 1:np
             for i = 1:mp
-                liutex(i,j,k) = compute_liutex(A(:,:,i,j,k));
+                [liutex_mag(i,j,k), liutex_axis] = compute_liutex(A(:,:,i,j,k));
+
+                % Find QSV candidate
+                qsv_candidate(i,j,k) = 0
+                theta1 = atan(liutex_axis(2) / liutex_axis(1)) / pi * 180
+                theta2 = atan(liutex_axis(3) / liutex_axis(1)) / pi * 180
+                if (theta1 > 0 && theta1 < 90)
+                    if (theta2 > -45 && theta2 < 45)
+                        qsv_candidate(i,j,k) = 1
+                    end
+                end
             end
         end
     end
@@ -593,7 +606,7 @@ end
 % A2_rr  : (1,1) - strength of  rigid rotation
 % A2_sr  : (1,1) - strength of  shear-rotation interaction term
 % rotAx  : (3,1) - axis     of  rigid rotation
-function liutex = compute_liutex(A)
+function [liutex_mag, liutex_axis] = compute_liutex(A)
     
     % check VGT
     if ~isnumeric(A) || ~ismatrix(A) || any(~isfinite(A),'all') ||...
@@ -604,8 +617,6 @@ function liutex = compute_liutex(A)
     % Preliminary
     A_S  = (A + A')/2;    % strain-rate tensor (symmetric)
     A_W  = (A - A')/2;    % vorticity   tensor (antisymmetric)
-    S2   = sum(A_S(:).^2);% strain-rate strength
-    W2   = sum(A_W(:).^2);% vorticity   strength
     vort = [... % vorticity vector
             A(3,2) - A(2,3);...
             A(1,3) - A(3,1);...
@@ -617,29 +628,22 @@ function liutex = compute_liutex(A)
     [V,D]       = eig(A,'vector');     % eigenvalues and eigenvectors
     [~,idxreal] = min(abs(imag(D)));   % find real eigenvalue
     if sum(D == real(D)) == length(D)  % if   no rotation
-        rotAx_e = zeros(3,1);          % then no rotation axis
+        rotAx = zeros(3,1);            % then no rotation axis
     else                               % otherwise
-        rotAx_e = V(:,idxreal);        % rotation axis is real eigenvector
+        rotAx = V(:,idxreal);          % rotation axis is real eigenvector
     end
     Lci  = max(abs(imag(D)));          % imaginary part of complex eigenvalues
-    beta = sum(vort.*rotAx_e)/2;       % vorticity along rotation axis
+    beta = sum(vort.*rotAx)/2;         % vorticity along rotation axis
     if beta < 0                        % if   rotation sign is incorrect
-        beta    = -1*beta;             % flip rotation sign
-        rotAx_e = -1*rotAx_e;          % flip rotation axis
+        beta  = -1*beta;               % flip rotation sign
+        rotAx = -1*rotAx;              % flip rotation axis
     end
     if Lci > beta                      % if numerical noise is relevant
-        beta    = Lci;                 % prevent real/complex issues
+        beta = Lci;                    % prevent real/complex issues
     end
-    alpha   = sqrt(beta^2 - Lci^2);    % shear contamination
-    liutex  = 2*(beta - alpha);        % rigid vorticity magnitude
-    vort_rr = liutex*rotAx_e;          % rigid vorticity vector
-    vort_ps = vort - vort_rr;          % shear vorticity vector
-    % partition VGT strengths
-    A2_rr_e = 0.5*liutex^2;            %  rigid rotation
-    A2_ps_e = sum(vort_ps.^2);         %   pure shearing
-    A2_ns_e = S2 - A2_ps_e/2;          % normal straining
-    A2_sr_e = W2 - A2_ps_e/2 - A2_rr_e;%  shear-rotation interaction term
-    clear idxreal Lci beta alpha vort_rr vort_ps
+    alpha = sqrt(beta^2 - Lci^2);      % shear contamination
+    liutex_mag  = 2*(beta - alpha);    % rigid vorticity magnitude
+    liutex_axis = liutex_mag*rotAx;    % rigid vorticity vector
 end
 
 % Compute the wall-normal derivative of a discretized function, fun(y)

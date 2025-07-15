@@ -8,7 +8,7 @@ function set_user_inputs()
     pres_stat = false;
     vorticity = false;
     energy_spectrum = false;
-    get_liutex = true;
+    liutex_stat = true;
     growth_rate = false;
 
     %% Reynolds number
