@@ -63,7 +63,11 @@ for i = 1:Nfiles
     % Compute jPDF of pressure and vorticity
     disp("[7/10] Compute jPDF of pressure and vorticity ..."); tic;
     if (pres_stat && vorticity)
-        plot_jpdf_pres_omega_xy(qp(E_idx,:,y_idx_beg:y_idx_end,:),omega_xy,timesteps(i));
+        % plot_jpdf_pres_omega_xy(qp(E_idx,:,y_idx_beg:y_idx_end,:), omega_xy, timesteps(i));
+        plot_jpdf(qp(E_idx,:,y_idx_beg:y_idx_end,:), "$p$", [-3, 1, 2], ...
+                  omega_xy, "$\omega_{xy}$", [0:2:10], ...
+                  "jpdf_pres_omegaxy", timesteps(i));
+
     else
         disp("skipped");
     end
@@ -106,14 +110,11 @@ for i = 1:Nfiles
             omega = f_compute_vorticity(dvel_ds);
         end
         [liutex_mag, qsv_candidate] = f_compute_liutex(dvel_ds);
-        plot_qsv_stat(liutex_mag, ...
+        compute_qsv_stat(liutex_mag, ...
                     qsv_candidate, ...
                     qp(E_idx,:,y_idx_beg:y_idx_end,:), ... % Pressure
                     omega(:,y_idx_beg:y_idx_end,:) ... % Vorticity
                     );
-        plot_jpdf_liutex_omega_xy();
-        plot_jpdf_liutex_pres();
-        plot_jpdf_pres_omega_xy();
     else
         disp("skipped");
     end
@@ -173,8 +174,8 @@ function create_directory()
         end
     end
     if (pres_stat && vorticity)
-        if ~exist(strcat("results/jpdf_pres_omega_xy"), "dir")
-            mkdir(strcat("results/jpdf_pres_omega_xy"));
+        if ~exist(strcat("results/jpdf_pres_omegaxy"), "dir")
+            mkdir(strcat("results/jpdf_pres_omegaxy"));
         end
     end
     if (energy_spectrum)
@@ -596,16 +597,7 @@ function [liutex_mag, qsv_candidate] = f_compute_liutex(A)
 
 end
 
-% Partition VGT via normality-based decomposition (eig. methods)
-% Written by Rahul Arun (rarun@caltech.edu)
-% Inputs
-% A      : (3,3) - velocity gradient tensor
-% Outputs
-% A2_ns  : (1,1) - strength of normal straining
-% A2_ps  : (1,1) - strength of   pure shearing
-% A2_rr  : (1,1) - strength of  rigid rotation
-% A2_sr  : (1,1) - strength of  shear-rotation interaction term
-% rotAx  : (3,1) - axis     of  rigid rotation
+% Compute liutex
 function [liutex_mag, liutex_axis] = compute_liutex(A)
     
     % check VGT
@@ -644,6 +636,22 @@ function [liutex_mag, liutex_axis] = compute_liutex(A)
     alpha = sqrt(beta^2 - Lci^2);      % shear contamination
     liutex_mag  = 2*(beta - alpha);    % rigid vorticity magnitude
     liutex_axis = liutex_mag*rotAx;    % rigid vorticity vector
+end
+
+% Compute QSV statistics
+function compute_qsv_stat(liutex_mag, ...
+                        qsv_candidate, ...
+                        qp(E_idx,:,y_idx_beg:y_idx_end,:), ... % Pressure
+                        omega(:,y_idx_beg:y_idx_end,:) ... % Vorticity
+                        )
+
+    plot_jpdf(liutex_mag(:,y_idx_beg:y_idx_end,:), "$R$", [0, 1, 10], ...
+              omega_xy, "$\omega_{xy}$", [0:2:10], ...
+              "jpdf_liutex_omegaxy", timesteps(i))
+    plot_jpdf(liutex_mag(:,y_idx_beg:y_idx_end,:), "$R$", [0, 1, 10], ...
+              qp(E_idx,:,y_idx_beg:y_idx_end,:), "$p$", [-3, 1, 2], ...
+              "jpdf_liutex_pres", timesteps(i))
+
 end
 
 % Compute the wall-normal derivative of a discretized function, fun(y)
@@ -945,6 +953,44 @@ function plot_energy_spectrum(k, E, timestep)
     xlim([1e-2 1e2]); ylim([1e-12 1e-2]);
     set(gca,'TickLabelInterpreter','latex');
     saveas(f1,"results/energy_spectrum/tstep_"+string(timestep),"png"); 
+    close(f1);
+end
+
+% plot_jpdf_pres_omega_xy
+function plot_jpdf(var1, var1name, var1axis, ...
+                   var2, var2name, var2axis, ...
+                   filename, timestep)
+
+    load variables/user_inputs.mat;
+    
+    f1 = figure("DefaultAxesFontSize",18);
+
+    x = reshape(var1,[],1);
+    y = reshape(var2,[],1);
+    [counts, xEdges, yEdges] = histcounts2(x, y, 100);
+
+    % Convert histogram counts to probability density
+    binWidthX = xEdges(2) - xEdges(1);
+    binWidthY = yEdges(2) - yEdges(1);
+    jointPDF = counts / (sum(counts(:)) * binWidthX * binWidthY);
+
+    % Define bin centers
+    xCenters = xEdges(1:end-1) + binWidthX/2;
+    yCenters = yEdges(1:end-1) + binWidthY/2;
+
+    % Plot joint PDF as a contour plot
+    contourf(xCenters, yCenters, log(jointPDF'), 20, 'LineColor', 'none'); hold on;
+    if (var1name == "$p$")
+        plot([pv pv],[0 10],'r--','LineWidth',1.5);
+    end
+    xlim([var1axis(1) var1axis(3)]); xticks([var1axis(1):var1axis(2):var1axis(3)]);
+    ylim([var2axis(1) var2axis(3)]); yticks([var2axis(1):var2axis(2):var2axis(3)]);
+    colorbar; caxis([-10 6]);
+    xlabel(var1name,'Interpreter','latex');
+    ylabel(var2anme,'Interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+
+    saveas(f1,"results/"+filename+"/tstep_"+string(timestep),"png"); 
     close(f1);
 end
 

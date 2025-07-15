@@ -21,9 +21,9 @@ function set_user_inputs()
     Ly = 160.0; % Domain size in y-direction
     Lz = 80.0;  % Domain size in z-direction
 
-    m = 127;   % Number of grids in x-direction (0, ..., m)
-    n = 127;   % Number of grids in y-direction (0, ..., n)
-    p = 63;    % Number of grids in z-direction (0, ..., p)
+    m = 1023;   % Number of grids in x-direction (0, ..., m)
+    n = 1023;   % Number of grids in y-direction (0, ..., n)
+    p = 511;    % Number of grids in z-direction (0, ..., p)
 
     % Stretched grid in y-direction
     stretch_y = true; 
@@ -33,7 +33,7 @@ function set_user_inputs()
     loops_y = 2;
 
     %% Time
-    tstep = 88; tskip = 10; dt = 0.056818181818181816;
+    tstep = 704; tskip = 10; dt = 0.007102272727272727;
     % Nt_beg = tstep*0;
     % Nt_end = tstep*40;
     % Nt_save = tstep*tskip;
