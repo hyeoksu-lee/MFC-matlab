@@ -5,8 +5,8 @@ function set_user_inputs()
     artificial_mach = true;
     Reynolds_stress = false;
     tke_budget = false;
-    pres_stat = false;
-    vorticity = false;
+    pres_stat = true;
+    vorticity = true;
     energy_spectrum = false;
     liutex_stat = true;
     growth_rate = false;

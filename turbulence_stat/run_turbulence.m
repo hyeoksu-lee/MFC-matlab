@@ -114,8 +114,8 @@ for i = 1:Nfiles
         compute_qsv_stat(liutex_mag(:,y_idx_beg:y_idx_end,:), ...
                       qsv_candidate(:,y_idx_beg:y_idx_end,:), ...
                            qp(E_idx,:,y_idx_beg:y_idx_end,:), ... % Pressure
-                              omega(:,y_idx_beg:y_idx_end,:) ... % Vorticity
-                    );
+                              omega(:,y_idx_beg:y_idx_end,:), ... % Vorticity
+                        timesteps(i));
     else
         disp("skipped");
     end
@@ -145,43 +145,51 @@ function create_directory()
 
     load variables/user_inputs.mat;
 
-    if ~exist(strcat("results"), "dir")
-        mkdir(strcat("results"));
+    if ~exist("results", "dir")
+        mkdir("results");
     end
     if (Reynolds_stress)
-        if ~exist(strcat("results/Reynolds_stress"), "dir")
-            mkdir(strcat("results/Reynolds_stress"));
+        if ~exist("results/Reynolds_stress", "dir")
+            mkdir("results/Reynolds_stress");
         end
-        if ~exist(strcat("results/Reynolds_stress_data"), "dir")
-            mkdir(strcat("results/Reynolds_stress_data"));
+        if ~exist("results/Reynolds_stress_data", "dir")
+            mkdir("results/Reynolds_stress_data");
         end
     end
     if (tke_budget)
-        if ~exist(strcat("results/tke_budget"), "dir")
-            mkdir(strcat("results/tke_budget"));
+        if ~exist("results/tke_budget", "dir")
+            mkdir("results/tke_budget");
         end
-        if ~exist(strcat("results/tke_budget_data"), "dir")
-            mkdir(strcat("results/tke_budget_data"));
+        if ~exist("results/tke_budget_data", "dir")
+            mkdir("results/tke_budget_data");
         end
     end
     if (pres_stat)
-        if ~exist(strcat("results/pdf_pressure"), "dir")
-            mkdir(strcat("results/pdf_pressure"));
+        if ~exist("results/pdf_pressure", "dir")
+            mkdir("results/pdf_pressure");
         end
     end
     if (vorticity)
-        if ~exist(strcat("results/pdf_omega_xy"), "dir")
-            mkdir(strcat("results/pdf_omega_xy"));
+        if ~exist("results/pdf_omega_xy", "dir")
+            mkdir("results/pdf_omega_xy");
         end
     end
     if (pres_stat && vorticity)
-        if ~exist(strcat("results/jpdf_pres_omegaxy"), "dir")
-            mkdir(strcat("results/jpdf_pres_omegaxy"));
+        if ~exist("results/jpdf_pres_omegaxy", "dir")
+            mkdir("results/jpdf_pres_omegaxy");
         end
     end
     if (energy_spectrum)
-        if ~exist(strcat("results/energy_spectrum"), "dir")
-            mkdir(strcat("results/energy_spectrum"));
+        if ~exist("results/energy_spectrum", "dir")
+            mkdir("results/energy_spectrum");
+        end
+    end
+    if (liutex_stat)
+        if ~exist("results/jpdf_liutex_omegaxy", "dir")
+            mkdir("results/jpdf_liutex_omegaxy");
+        end
+        if ~exist("results/jpdf_liutex_pres", "dir")
+            mkdir("results/jpdf_liutex_pres");
         end
     end
 end
@@ -643,15 +651,15 @@ end
 function compute_qsv_stat(liutex_mag, ...
                         qsv_candidate, ...
                         pres, ... % Pressure
-                        omega_xy ... % Vorticity
-                        )
+                        omega_xy, ... % Vorticity
+                        timestep)
 
     plot_jpdf(liutex_mag, "$R$", [0, 1, 10], ...
-              omega_xy, "$\omega_{xy}$", [0:2:10], ...
-              "jpdf_liutex_omegaxy", timesteps(i))
+              omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
+              "jpdf_liutex_omegaxy", timestep)
     plot_jpdf(liutex_mag, "$R$", [0, 1, 10], ...
               pres, "$p$", [-3, 1, 2], ...
-              "jpdf_liutex_pres", timesteps(i))
+              "jpdf_liutex_pres", timestep)
 
 end
 
