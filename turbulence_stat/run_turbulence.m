@@ -37,12 +37,13 @@ for i = 1:Nfiles
     % Compute y-index for -0.99*U to 0.99*U
     disp("[4/10] Find shear region ..."); tic;
     [y_idx_beg y_idx_end] = f_find_shear_region(qp_mean(momxb,:,:,:)); toc;
-
+    
     % Compute pressure statistics
     disp("[5/10] Compute pressure statistics ..."); tic;
     if (pres_stat)
+        pres = qp(E_idx,:,y_idx_beg:y_idx_end,:);
         pres_min(i) = min(qp(E_idx,:,:,:),[],"all"); % Compute minimum pressure
-        plot_pdf_pressure(qp(E_idx,:,y_idx_beg:y_idx_end,:), timesteps(i)); % Compute PDF of pressure
+        plot_pdf_pressure(pres, timesteps(i)); % Compute PDF of pressure
     else
         disp("skipped");
     end
@@ -64,8 +65,8 @@ for i = 1:Nfiles
     disp("[7/10] Compute jPDF of pressure and vorticity ..."); tic;
     if (pres_stat && vorticity)
         % plot_jpdf_pres_omega_xy(qp(E_idx,:,y_idx_beg:y_idx_end,:), omega_xy, timesteps(i));
-        plot_jpdf(qp(E_idx,:,y_idx_beg:y_idx_end,:), "$p$", [-3, 1, 2], ...
-                  omega_xy, "$\omega_{xy}$", [0:2:10], ...
+        plot_jpdf(pres, "$p$", [-3, 1, 2], ...
+                  omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
                   "jpdf_pres_omegaxy", timesteps(i));
 
     else
@@ -106,15 +107,23 @@ for i = 1:Nfiles
     % Compute Liutex
     disp("[11/11] Compute Liutex"); tic;
     if (liutex_stat)
+        if (~pres_stat)
+            pres = qp(E_idx,:,y_idx_beg:y_idx_end,:);
+        end
         if (~vorticity) 
             omega = f_compute_vorticity(dvel_ds);
-            omega_xy = sqrt(omega(1,:,:,:).^2 + omega(2,:,:,:).^2);
+            omega_xy = sqrt(omega(1,:,y_idx_beg:y_idx_end,:).^2 ...
+                          + omega(2,:,y_idx_beg:y_idx_end,:).^2);
         end
-        [liutex_mag, qsv_candidate] = f_compute_liutex(dvel_ds);
-        compute_qsv_stat(liutex_mag(:,y_idx_beg:y_idx_end,:), ...
-                      qsv_candidate(:,y_idx_beg:y_idx_end,:), ...
-                           qp(E_idx,:,y_idx_beg:y_idx_end,:), ... % Pressure
-                              omega(:,y_idx_beg:y_idx_end,:), ... % Vorticity
+        
+        [liutex_mag, qsv_candidate, vort_stretch_proj] = ...
+                    f_compute_liutex(dvel_ds(:,:,:,y_idx_beg:y_idx_end,:));
+
+        compute_qsv_stat(liutex_mag, ...
+                      qsv_candidate, ...
+                               pres, ... % Pressure
+                           omega_xy, ... % Vorticity
+                  vort_stretch_proj, ...
                         timesteps(i));
     else
         disp("skipped");
@@ -581,43 +590,38 @@ function [k E] = compute_energy_spectrum(u, v, w, Lx, Lz)
 end
 
 % Compute liutex
-function [liutex_mag, qsv_candidate] = f_compute_liutex(A)
-    load variables/user_inputs.mat;
+function [liutex_mag, qsv_candidate, vort_stretch_proj] = f_compute_liutex(A)
 
-    liutex_mag = zeros(mp,np,pp);
-    qsv_candidate = zeros(mp,np,pp);
-    for k = 1:pp
-        for j = 1:np
-            for i = 1:mp
-                [liutex_mag(i,j,k), liutex_axis] = compute_liutex(A(:,:,i,j,k));
+    [~,~,nx,ny,nz] = size(A);
+    liutex_mag = zeros(nx,ny,nz);
+    qsv_candidate = zeros(nx,ny,nz);
+    vort_stretch_proj = zeros(nx,ny,nz);
+
+    for k = 1:nz
+        for j = 1:ny
+            for i = 1:nx
+            
+                % Compute liutex and vortex stretching projected on liutex axis
+                [liutex_mag(i,j,k), liutex_axis, vort_stretch_proj(i,j,k)] ...
+                                            = compute_liutex(A(:,:,i,j,k));
 
                 % Find QSV candidate
-                qsv_candidate(i,j,k) = 0
-                theta1 = atan(liutex_axis(2) / liutex_axis(1)) / pi * 180
-                theta2 = atan(liutex_axis(3) / liutex_axis(1)) / pi * 180
+                qsv_candidate(i,j,k) = 0;
+                theta1 = atan(liutex_axis(2) / liutex_axis(1)) / pi * 180;
+                theta2 = atan(liutex_axis(3) / liutex_axis(1)) / pi * 180;
                 if (theta1 > 0 && theta1 < 90)
                     if (theta2 > -45 && theta2 < 45)
-                        qsv_candidate(i,j,k) = 1
+                        qsv_candidate(i,j,k) = 1;
                     end
                 end
             end
         end
     end
-
 end
 
 % Compute liutex
-function [liutex_mag, liutex_axis] = compute_liutex(A)
-    
-    % check VGT
-    if ~isnumeric(A) || ~ismatrix(A) || any(~isfinite(A),'all') ||...
-            size(A,1) ~=3 || size(A,2) ~= 3
-        error('VGT must be a valid numeric array of size (3,3).')
-    end
-    
-    % Preliminary
-    A_S  = (A + A')/2;    % strain-rate tensor (symmetric)
-    A_W  = (A - A')/2;    % vorticity   tensor (antisymmetric)
+function [liutex_mag, liutex_axis, vort_stretch_proj] = compute_liutex(A)
+
     vort = [... % vorticity vector
             A(3,2) - A(2,3);...
             A(1,3) - A(3,1);...
@@ -645,22 +649,36 @@ function [liutex_mag, liutex_axis] = compute_liutex(A)
     alpha = sqrt(beta^2 - Lci^2);      % shear contamination
     liutex_mag  = 2*(beta - alpha);    % rigid vorticity magnitude
     liutex_axis = liutex_mag*rotAx;    % rigid vorticity vector
+
+    vort_stretch_proj = 0.0;
+    for i = 1:3
+        for j = 1:3
+            vort_stretch_proj = vort_stretch_proj + vort(i)*A(j,i)*liutex_axis(j);
+        end
+    end
+    
 end
 
 % Compute QSV statistics
 function compute_qsv_stat(liutex_mag, ...
-                        qsv_candidate, ...
-                        pres, ... % Pressure
-                        omega_xy, ... % Vorticity
-                        timestep)
+                            qsv_candidate, ...
+                            pres, ... % Pressure
+                            omega_xy, ... % Vorticity
+                            vort_stretch_proj, ...
+                            timestep)
 
-    plot_jpdf(liutex_mag, "$R$", [0, 1, 10], ...
-              omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
-              "jpdf_liutex_omegaxy", timestep)
-    plot_jpdf(liutex_mag, "$R$", [0, 1, 10], ...
-              pres, "$p$", [-3, 1, 2], ...
-              "jpdf_liutex_pres", timestep)
-
+    plot_jpdf(omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
+              liutex_mag, "$R$", [0, 1, 10], ...              
+              "jpdf_liutex_omegaxy", timestep);
+    plot_jpdf(pres, "$p$", [-3, 1, 2], ...
+              liutex_mag, "$R$", [0, 1, 10], ...
+              "jpdf_liutex_pres", timestep);
+    plot_jpdf(omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
+              liutex_mag.*qsv_candidate, "$R f_{QSV}$", [0, 1, 10], ...
+              "jpdf_liutex_qsv_omegaxy", timestep);
+    plot_jpdf(pres, "$p$", [-3, 1, 2], ... 
+              liutex_mag.*qsv_candidate, "$R f_{QSV}$", [0, 1, 10], ...
+              "jpdf_liutex_qsv_pres", timestep);
 end
 
 % Compute the wall-normal derivative of a discretized function, fun(y)
@@ -918,40 +936,6 @@ function plot_pdf_omega_xy(omega_xy,timestep)
     close(f1);
 end
 
-% plot_jpdf_pres_omega_xy
-function plot_jpdf_pres_omega_xy(pres, omega_xy, timestep)
-
-    load variables/user_inputs.mat;
-    
-    f1 = figure("DefaultAxesFontSize",18);
-
-    x = reshape(pres,[],1);
-    y = reshape(omega_xy,[],1);
-    [counts, xEdges, yEdges] = histcounts2(x, y, 100);
-
-    % Convert histogram counts to probability density
-    binWidthX = xEdges(2) - xEdges(1);
-    binWidthY = yEdges(2) - yEdges(1);
-    jointPDF = counts / (sum(counts(:)) * binWidthX * binWidthY);
-
-    % Define bin centers
-    xCenters = xEdges(1:end-1) + binWidthX/2;
-    yCenters = yEdges(1:end-1) + binWidthY/2;
-
-    % Plot joint PDF as a contour plot
-    contourf(xCenters, yCenters, log(jointPDF'), 20, 'LineColor', 'none'); hold on;
-    plot([pv pv],[0 10],'r--','LineWidth',1.5);
-    xlim([-3 2]); xticks([-3:1:2]);
-    ylim([0 10]); yticks([0:2:10]);
-    colorbar; caxis([-10 6]);
-    xlabel('$p$','Interpreter','latex');
-    ylabel('$\omega_{xy}$','Interpreter','latex');
-    set(gca,'TickLabelInterpreter','latex');
-
-    saveas(f1,"results/jpdf_pres_omega_xy/tstep_"+string(timestep),"png"); 
-    close(f1);
-end
-
 % plot_energy_spectrum
 function plot_energy_spectrum(k, E, timestep)
     f1 = figure("DefaultAxesFontSize",18);
@@ -965,12 +949,36 @@ function plot_energy_spectrum(k, E, timestep)
     close(f1);
 end
 
-% plot_jpdf_pres_omega_xy
+% plot_pdf
+function plot_pdf(var, varname, varaxis, histbin, filename, timestep)
+
+    % Create dir if not exist
+    if ~exist("results/"+filename, "dir")
+        mkdir("results/"+filename);
+    end
+
+    f1 = figure("DefaultAxesFontSize",18);
+    histogram(reshape(var,[],1),histbin,'EdgeColor','k','LineWidth',1.5,'Normalization','pdf', 'DisplayStyle', 'stairs'); hold on; grid on;
+    xlim([varaxis(1) varaxis(3)]); 
+    set(gca, 'YScale', 'log');
+    xlabel(varname,'interpreter','latex');
+    ylabel('$PDF$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    saveas(f1,"results/"+filename+"/tstep_"+string(timestep),"png"); 
+    close(f1);
+end
+
+% plot_jpdf
 function plot_jpdf(var1, var1name, var1axis, ...
                    var2, var2name, var2axis, ...
                    filename, timestep)
 
     load variables/user_inputs.mat;
+    
+    % Create dir if not exist
+    if ~exist("results/"+filename, "dir")
+        mkdir("results/"+filename);
+    end
     
     f1 = figure("DefaultAxesFontSize",18);
 
@@ -996,9 +1004,10 @@ function plot_jpdf(var1, var1name, var1axis, ...
     ylim([var2axis(1) var2axis(3)]); yticks([var2axis(1):var2axis(2):var2axis(3)]);
     colorbar; caxis([-10 6]);
     xlabel(var1name,'Interpreter','latex');
-    ylabel(var2anme,'Interpreter','latex');
+    ylabel(var2name,'Interpreter','latex');
     set(gca,'TickLabelInterpreter','latex');
 
+    % Save figure
     saveas(f1,"results/"+filename+"/tstep_"+string(timestep),"png"); 
     close(f1);
 end
