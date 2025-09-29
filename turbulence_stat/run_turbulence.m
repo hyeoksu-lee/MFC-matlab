@@ -23,7 +23,7 @@ for i = 1:Nfiles
 
     % Compute mean quantities
     disp("[2/10] Compute mean and fluctuating quantities ..."); tic;
-    [qp_mean qp_fluc] = f_compute_qp_mean_fluc(qp); toc;
+    [qp_mean, qp_fluc] = f_compute_qp_mean_fluc(qp); toc;
 
     % Compute derivatives
     disp("[3/10] Compute velocity derivatives ..."); tic;
@@ -118,6 +118,15 @@ for i = 1:Nfiles
         
         [liutex_mag, qsv_candidate, vort_stretch_proj] = ...
                     f_compute_liutex(dvel_ds(:,:,:,y_idx_beg:y_idx_end,:));
+
+        A = readmatrix("../../fort.dat");
+    
+        qsv_candidate = zeros(256,256,128);
+        for qq = 1:length(A)
+            qsv_candidate(A(qq,1) + 1, A(qq,2) + 1, A(qq,3) + 1) = A(qq,4);
+        end
+    
+        qsv_candidate = qsv_candidate(:, y_idx_beg:y_idx_end, :);
 
         compute_qsv_stat(liutex_mag, ...
                       qsv_candidate, ...
@@ -667,6 +676,7 @@ function compute_qsv_stat(liutex_mag, ...
                             vort_stretch_proj, ...
                             timestep)
 
+
     plot_jpdf(omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
               liutex_mag, "$R$", [0, 1, 10], ...              
               "jpdf_liutex_omegaxy", timestep);
@@ -679,6 +689,15 @@ function compute_qsv_stat(liutex_mag, ...
     plot_jpdf(pres, "$p$", [-3, 1, 2], ... 
               liutex_mag.*qsv_candidate, "$R f_{QSV}$", [0, 1, 10], ...
               "jpdf_liutex_qsv_pres", timestep);
+    plot_jpdf(omega_xy, "$\omega_{xy}$", [0, 2, 10], ...
+              liutex_mag.*(1-qsv_candidate), "$R f_{nonQSV}$", [0, 1, 10], ...
+              "jpdf_liutex_nonqsv_omegaxy", timestep);
+    plot_jpdf(pres, "$p$", [-3, 1, 2], ... 
+              liutex_mag.*(1-qsv_candidate), "$R f_{nonQSV}$", [0, 1, 10], ...
+              "jpdf_liutex_nonqsv_pres", timestep);
+    
+    plot_pdf(squeeze(pres).*qsv_candidate, "$p f_{QSV}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_pres_qsv", timestep);
+    plot_pdf(squeeze(pres).*(1-qsv_candidate), "$p f_{nonQSV}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_pres_nonqsv", timestep);
 end
 
 % Compute the wall-normal derivative of a discretized function, fun(y)
@@ -1000,8 +1019,8 @@ function plot_jpdf(var1, var1name, var1axis, ...
     if (var1name == "$p$")
         plot([pv pv],[0 10],'r--','LineWidth',1.5);
     end
-    xlim([var1axis(1) var1axis(3)]); xticks([var1axis(1):var1axis(2):var1axis(3)]);
-    ylim([var2axis(1) var2axis(3)]); yticks([var2axis(1):var2axis(2):var2axis(3)]);
+    % xlim([var1axis(1) var1axis(3)]); xticks([var1axis(1):var1axis(2):var1axis(3)]);
+    % ylim([var2axis(1) var2axis(3)]); yticks([var2axis(1):var2axis(2):var2axis(3)]);
     colorbar; caxis([-10 6]);
     xlabel(var1name,'Interpreter','latex');
     ylabel(var2name,'Interpreter','latex');
