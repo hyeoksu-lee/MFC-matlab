@@ -11,7 +11,7 @@ for i = 1:Nfiles
     tic;
     filename = "../../qsv_data.dat"; disp(filename);
     fileID = fopen(filename,'rb');
-    val = fread(fileID, [9, Inf], 'double');
+    val = fread(fileID, [10, Inf], 'double');
     fclose(fileID);
     toc;
     
@@ -28,6 +28,7 @@ for i = 1:Nfiles
     omega110 = (omega1 + omega2)/sqrt(2);
     vs_proj = val(8,:);
     vs_res = val(9,:);
+    qsv_group = val(10,:);
     
     % Vortex
     qsv_info5_v = qsv_info5(qsv_info1 == 1);
