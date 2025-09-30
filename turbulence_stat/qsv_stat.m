@@ -8,12 +8,15 @@ toc;
 
 for i = 1:Nfiles
     % Read qsv_data
+    tic;
     filename = "../../qsv_data.dat"; disp(filename);
     fileID = fopen(filename,'rb');
     val = fread(fileID, [9, Inf], 'double');
     fclose(fileID);
+    toc;
     
     % Assign values
+    tic;
     qsv_info1 = val(1,:);
     qsv_info5 = val(2,:);
     pres = val(3,:);
@@ -22,6 +25,7 @@ for i = 1:Nfiles
     omega2 = val(6,:);
     omega3 = val(7,:);
     omega_xy = sqrt(omega1.^2 + omega2.^2);
+    omega110 = (omega1 + omega2)/sqrt(2);
     vs_proj = val(8,:);
     vs_res = val(9,:);
     
@@ -30,6 +34,7 @@ for i = 1:Nfiles
     pres_v = pres(qsv_info1 == 1);
     liutex_mag_v = liutex_mag(qsv_info1 == 1);
     omega_xy_v = omega_xy(qsv_info1 == 1);
+    omega110_v = omega110(qsv_info1 == 1);
     vs_proj_v = vs_proj(qsv_info1 == 1);
     vs_res_v = vs_res(qsv_info1 == 1);
     
@@ -37,6 +42,7 @@ for i = 1:Nfiles
     pres_qsv = pres(qsv_info5 == 1);
     liutex_mag_qsv = liutex_mag(qsv_info5 == 1);
     omega_xy_qsv = omega_xy(qsv_info5 == 1);
+    omega110_qsv = omega110(qsv_info5 == 1);
     vs_proj_qsv = vs_proj(qsv_info5 == 1);
     vs_res_qsv = vs_res(qsv_info5 == 1);
     
@@ -44,23 +50,21 @@ for i = 1:Nfiles
     pres_nqsv = pres_v(qsv_info5_v == 0);
     liutex_mag_nqsv = liutex_mag_v(qsv_info5_v == 0);
     omega_xy_nqsv = omega_xy_v(qsv_info5_v == 0);
+    omega110_nqsv = omega110_v(qsv_info5_v == 0);
     vs_proj_nqsv = vs_proj_v(qsv_info5_v == 0);
     vs_res_nqsv = vs_res_v(qsv_info5_v == 0);
     
     % Plot
-    plot_pdf(pres_v,"$p$", [-3, 1, 2], [-3:0.002:1.5], "pdf_pres", timesteps(i));
-    plot_pdf(omega_xy_v,"$\omega_{xy}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_omegaxy", timesteps(i));
-    
-    plot_pdf(pres_qsv, "$p f_{QSV}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_pres_qsv", timesteps(i));
-    plot_pdf(omega_xy_qsv, "$\omega_{xy} f_{QSV}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_omegaxy_qsv", timesteps(i));
-
-    plot_pdf(pres_nqsv, "$p f_{nonQSV}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_pres_nqsv", timesteps(i));
-    plot_pdf(omega_xy_nqsv, "$\omega_{xy} f_{nonQSV}$", [-3, 1, 2], [-3:0.002:1.5], "pdf_omegaxy_nqsv", timesteps(i));
+    plot_pdf3(pres_v, pres_nqsv, pres_qsv, "$p$", [-3, 1, 2], [1e-4, 1e1], [-3:0.01:2], "pdf_pres_compare", timesteps(i));
+    plot_pdf3(omega_xy_v, omega_xy_nqsv, omega_xy_qsv, "$\omega_{xy}$", [0, 1, 6], [1e-4, 1e1], [0:0.01:6], "pdf_omegaxy_compare", timesteps(i));
+    plot_pdf3(omega110_v, omega110_nqsv, omega110_qsv, "$\omega_{(1,1,0)}$", [0, 1, 6], [1e-4, 1e1], [0:0.01:6], "pdf_omega110_compare", timesteps(i));
+    plot_pdf3(liutex_mag_v, liutex_mag_nqsv, liutex_mag_qsv, "$R$", [0, 2, 10], [1e-4, 1e1], [0:0.01:10], "pdf_liutexmag_compare", timesteps(i));
+    toc;
 end
 disp("End of program");
 
 % plot_pdf
-function plot_pdf(var, varname, varaxis, histbin, filename, timestep)
+function plot_pdf(var, varname, varaxis, pdfaxis, histbin, filename, timestep)
 
     % Create dir if not exist
     if ~exist("results/"+filename, "dir")
@@ -68,11 +72,33 @@ function plot_pdf(var, varname, varaxis, histbin, filename, timestep)
     end
 
     f1 = figure("DefaultAxesFontSize",18);
-    histogram(reshape(var,[],1),histbin,'EdgeColor','k','LineWidth',1.5,'Normalization','pdf', 'DisplayStyle', 'stairs'); hold on; grid on;
-    xlim([varaxis(1) varaxis(3)]); 
+    histogram(reshape(var,[],1),histbin,'EdgeColor','k','LineWidth',1.5,'Normalization','pdf','DisplayStyle','stairs'); hold on; grid on;
+    xlim([varaxis(1) varaxis(3)]); ylim([pdfaxis(1) pdfaxis(2)]);
     set(gca, 'YScale', 'log');
     xlabel(varname,'interpreter','latex');
     ylabel('$PDF$','interpreter','latex');
+    set(gca,'TickLabelInterpreter','latex');
+    saveas(f1,"results/"+filename+"/tstep_"+string(timestep),"png"); 
+    close(f1);
+end
+
+% plot_pdf
+function plot_pdf3(var1, var2, var3, varname, varaxis, pdfaxis, histbin, filename, timestep)
+
+    % Create dir if not exist
+    if ~exist("results/"+filename, "dir")
+        mkdir("results/"+filename);
+    end
+
+    f1 = figure("DefaultAxesFontSize",18);
+    histogram(reshape(var1,[],1),histbin,'EdgeColor','k','LineWidth',1.5,'Normalization','pdf','DisplayStyle','stairs'); hold on; grid on;
+    histogram(reshape(var2,[],1),histbin,'EdgeColor','b','LineWidth',1.5,'Normalization','pdf','DisplayStyle','stairs');
+    histogram(reshape(var3,[],1),histbin,'EdgeColor','r','LineWidth',1.5,'Normalization','pdf','DisplayStyle','stairs');
+    xlim([varaxis(1) varaxis(3)]); ylim([pdfaxis(1) pdfaxis(2)]);
+    set(gca, 'YScale', 'log');
+    xlabel(varname,'interpreter','latex');
+    ylabel('$PDF$','interpreter','latex');
+    legend("$\mbox{all}$", "$\mbox{non-QSV}$", "$\mbox{QSV}$", 'interpreter', 'latex');
     set(gca,'TickLabelInterpreter','latex');
     saveas(f1,"results/"+filename+"/tstep_"+string(timestep),"png"); 
     close(f1);
